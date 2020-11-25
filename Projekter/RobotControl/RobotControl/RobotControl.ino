@@ -158,7 +158,7 @@ bool sensorRead(int sensorRequestType)
     case BOUNDRY_OR_BUMPER:
         bool b = sensorRead(ANY_BOUNDRY) || sensorRead(BUMPER);
         if (b) {
-          Serial.println("Sensor is high! readigs are: "
+          Serial.println("Sensor is high! readigs are: ");
           Serial.print("Left: ");
           Serial.print(analogRead(BOUNDRYSENSOR_L));
           Serial.print(", Right: ");
