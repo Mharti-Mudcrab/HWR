@@ -39,17 +39,17 @@ int timer1_counter = 60536; // preload timer 65536-16MHz/256/100Hz (10ms) 59286(
 
 //Turn variables
 //--------------
-double degreeCalcConst = 50/180.0; // Each wheel turns about 50 ticks pr. 180 degree turn.
+double degreeCalcConst = 10/180.0; // Each wheel turns about 50 ticks pr. 180 degree turn.
 int turnStart_L = 0;
 int turnStart_R = 0;
 int turnRef = 0;
 bool isMidtTurn = false;
 bool isReverseTurning = false;
 
-//---------------------- Tick interrupt routine ----------------------
-// These are the interrupt service routines that handles the interrupt
+//---------------------- Tick interrupt routine -----------------------
+// These are the interrupt service routines that handles the interrupts
 // from the encoder on motor L and R
-//--------------------------------------------------------------------
+//---------------------------------------------------------------------
 void enc_Int_Motor_L()
 {
     noInterrupts(); //Disables interrupts

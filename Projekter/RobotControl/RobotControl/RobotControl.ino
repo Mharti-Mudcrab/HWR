@@ -62,11 +62,11 @@
 #define BATTERY 5
 
 //Sufficient battery level cutoff
-#define BATTERY_CUTOFF 6
+#define BATTERY_CUTOFF 5
 
 //Boundry sensor cutoff
-#define BOUNDRY_CUTOFF_L 150 // venstre er for hurtig med høj hastighed.
-#define BOUNDRY_CUTOFF_R 150 // Right sensor is vasly more sensitive than other.
+#define BOUNDRY_CUTOFF_L 200 // venstre er for hurtig med høj hastighed.
+#define BOUNDRY_CUTOFF_R 200 // Right sensor is vasly more sensitive than other.
 
 //  Pins
 //Motor encoders pins
@@ -145,22 +145,25 @@ void setup_pins_and_timer(int timer1_counter)
 }
 
 //Method for returning state of chosen sensor(s)
-bool sensorRead(int sensorRequestType) 
-{
+bool sensorRead(int sensorRequestType, bool useBoundryOffset = false) 
+{   
+    int boundryOffset = 0;
+    if (useBoundryOffset)
+        int boundryOffset = 40;
     switch (sensorRequestType)
     {
     case LEFT_BOUNDRY:
-        return analogRead(BOUNDRYSENSOR_L) > BOUNDRY_CUTOFF_L;
+        return analogRead(BOUNDRYSENSOR_L) > BOUNDRY_CUTOFF_L + boundryOffset;
     case RIGHT_BOUNDRY:
-        return analogRead(BOUNDRYSENSOR_R) > BOUNDRY_CUTOFF_R;
+        return analogRead(BOUNDRYSENSOR_R) > BOUNDRY_CUTOFF_R  + boundryOffset;
     case ANY_BOUNDRY:
         return sensorRead(LEFT_BOUNDRY) || sensorRead(RIGHT_BOUNDRY);
     case BUMPER:
         // TODO
-        return false; //digitalRead(BUMPERSENSOR_F) || digitalRead(BUMPERSENSOR_B);
+        return !(digitalRead(BUMPERSENSOR_F) && digitalRead(BUMPERSENSOR_B));
     case BOUNDRY_OR_BUMPER:
-        return sensorRead(ANY_BOUNDRY) || sensorRead(BUMPER) || lcd.readButtons()& BUTTON_SELECT;
+        return sensorRead(ANY_BOUNDRY) || sensorRead(BUMPER) || lcd.readButtons() & BUTTON_SELECT;
     case BATTERY:
-        return analogRead(BATTERYSENSOR) * (5 / 1024.00) *2 > BATTERY_CUTOFF;
+        return analogRead(BATTERYSENSOR) * (5 / 1024.00) *2 > BATTERY_CUTOFF && !(lcd.readButtons() & BUTTON_RIGHT);
     }
 }
