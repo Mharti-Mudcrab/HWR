@@ -9,9 +9,7 @@ void setup()
   // Mil -> kHz calc => https://www.unitjuggler.com/convert-frequency-from-%C2%B5s(p)-to-kHz.html?val=64
   Timer1.initialize(64); // Microsecond period to kHz => 15.625
   Timer1.pwm(9, 512);
-
   Serial.begin(9600);
-
 }
  
 void loop()

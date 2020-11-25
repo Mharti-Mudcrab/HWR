@@ -22,7 +22,7 @@ void setup()
 // Program loop that calls methods in setup_and_funcs.cpp
 //-------------------------------------------------------
 void loop() 
-{
+{/*
     Serial.print("leftSens = ");
     Serial.print(analogRead(BOUNDRYSENSOR_L));
     Serial.print("\trightSens = ");
@@ -36,7 +36,7 @@ void loop()
     Serial.print(desired_speed_L);
     Serial.print(", refR, ");
     Serial.print(desired_speed_R);*/
-    
+    /*
     Serial.print("\tposval_L = ");
     Serial.print(posVal_L);
     Serial.print("\t posval_R = ");
@@ -87,22 +87,25 @@ void loop()
     //Serial.println(returningState);
     */
   
-    /* Battery lvl not yet supported
-    if (sensorRead(BATTERY) == LAV)
+    // Battery lvl not yet supported
+    if (sensorRead(BATTERY))
     {
-        if (boundryState == BOUNDRY_DRIVE_BACKWARDS)
-            programState = PROG_RETURNING
-        else  
-            startTurn(REVERSE_TURN);
+        if (programState == PROG_CUT_GRASS ||
+            programState == PROG_AT_BOUNDRY) { 
+            if (boundryState == BOUNDRY_DRIVE_BACKWARDS)
+                programState = PROG_RETURNING
+            else  
+                startTurn(REVERSE_TURN);
+        }
     }
-    */  
+    
     
     switch (programState)
     {
     case PROG_CUT_GRASS:
         set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED); 
-        
-        if (sensorRead(BOUNDRY_OR_BUMPER));
+                      
+        if (sensorRead(BOUNDRY_OR_BUMPER))
             programState = PROG_AT_BOUNDRY;
             
         break;
@@ -197,6 +200,8 @@ void loop()
         break;
     }
 
+
+
     //Display
     lcd.setCursor(0, 0);
     switch (programState)
@@ -207,20 +212,24 @@ void loop()
         lcd.print("                ");
         break;
     case PROG_AT_BOUNDRY:
-        lcd.print("AT BOUNDRY      ");
-        lcd.setCursor(0, 1);
         switch (boundryState)
         {
         case BOUNDRY_DRIVE_BACKWARDS:
-            lcd.print("BACKING UP      ");
+            lcd.print("AT BOUNDRY  L");
+            lcd.print(analogRead(BOUNDRYSENSOR_L));
+            lcd.setCursor(0, 1);
+            lcd.print("BACKING UP  R");
+            lcd.print(analogRead(BOUNDRYSENSOR_R));
             break;
         case BOUNDRY_TURN:
-            lcd.print("TURNING         ");
+            lcd.print("AT BOUNDRY      ");
+            lcd.setCursor(0, 1);
+            lcd.print("TURNING ");
             lcd.print(turnRef / degreeCalcConst);
             if (digitalRead(DIR_L) == HIGH)
-                lcd.print("R");
+                lcd.print("R     ");
             else
-                lcd.print("L");
+                lcd.print("L     ");
             break;
         }
         break;

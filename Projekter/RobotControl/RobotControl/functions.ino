@@ -112,12 +112,6 @@ void motorControl()
     errorIntSum_L += errorVal_L * deltaT;           // Integral
     errorIntSum_R += errorVal_R * deltaT;
 
-    // Ensure max Integral is not hit in any direction
-    if (17,5 * desired_speed_L / Ki_L < abs(errorIntSum_L))
-        errorIntSum_L = 17,5 * desired_speed_L / Ki_L;
-    if (17,5 * desired_speed_R / Ki_R < abs(errorIntSum_R))
-        errorIntSum_L = 17,5 * desired_speed_R / Ki_R;
-    
     //Calculation of the PWM value used to drive the motor
     P_L = static_cast<int>(errorVal_L*Kp_L   +   errorIntSum_L*Ki_L); //   +   (errorVal_L-last_errorVal_L)*Kd_L);
     P_R = static_cast<int>(errorVal_R*Kp_R   +   errorIntSum_R*Ki_R); //   +   (errorVal_R-last_errorVal_R)*Kd_R);
