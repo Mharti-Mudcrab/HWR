@@ -62,8 +62,8 @@
 #define BATTERY 5
 
 //Boundry sensor cutoff
-#define BOUNDRY_CUTOFF_L 150 // venstre er for hurtig med høj hastighed.
-#define BOUNDRY_CUTOFF_R 150 // Right sensor is vasly more sensitive than other.
+#define BOUNDRY_CUTOFF_L 1500 // venstre er for hurtig med høj hastighed.
+#define BOUNDRY_CUTOFF_R 1500 // Right sensor is vasly more sensitive than other.
 
 //  Pins
 //Motor encoders pins
@@ -151,13 +151,20 @@ bool sensorRead(int sensorRequestType)
     case RIGHT_BOUNDRY:
         return analogRead(BOUNDRYSENSOR_R) > BOUNDRY_CUTOFF_R;
     case ANY_BOUNDRY:
-        return analogRead(BOUNDRYSENSOR_L) > BOUNDRY_CUTOFF_L ||
-               analogRead(BOUNDRYSENSOR_R) > BOUNDRY_CUTOFF_R;
+        return sensorRead(LEFT_BOUNDRY) || sensorRead(RIGHT_BOUNDRY);
     case BUMPER:
         // TODO
         return false; //digitalRead(BUMPERSENSOR_F) || digitalRead(BUMPERSENSOR_B);
     case BOUNDRY_OR_BUMPER:
-        return sensorRead(ANY_BOUNDRY) || sensorRead(BUMPER);
+        bool b = sensorRead(ANY_BOUNDRY) || sensorRead(BUMPER);
+        if (b) {
+          Serial.println("Sensor is high! readigs are: "
+          Serial.print("Left: ");
+          Serial.print(analogRead(BOUNDRYSENSOR_L));
+          Serial.print(", Right: ");
+          Serial.println(analogRead(BOUNDRYSENSOR_L));
+        }
+        return b;
     case BATTERY:
         return analogRead(BATTERYSENSOR) * (5 / 1024.00) *2 > 6;
     }

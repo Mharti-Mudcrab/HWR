@@ -203,6 +203,8 @@ void loop()
     {
     case PROG_CUT_GRASS:
         lcd.print("CUTTING GRASS   ");
+        lcd.setCursor(0, 1);
+        lcd.print("                ");
         break;
     case PROG_AT_BOUNDRY:
         lcd.print("AT BOUNDRY      ");
