@@ -83,13 +83,17 @@
 #define BUMPERSENSOR_F 6
 #define BUMPERSENSOR_B 7
 
+// Initialise lcd which controls the display trough I^2C
+// The shield uses the I^2C SCL and SDA pins
+Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
+
 //Setup method for pins and timer
 void setup_pins_and_timer(int timer1_counter)
 {
   //Setup serial for debugging.
   Serial.begin(9600);
 
-  //Setup display with LCD's number of columns and rows: 
+  //Setup display with LCD's number of columns and rows:
   lcd.begin(16, 2);
   lcd.setBacklight(WHITE);
   lcd.print("Grassotron 3000");
