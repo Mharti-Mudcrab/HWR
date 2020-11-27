@@ -128,6 +128,11 @@ void motorControl()
         P_R = 255;
     else if (P_R < 0)
         P_R = 0;
+
+    if (desired_speed_L == 0)
+        P_L = 0;
+    if (desired_speed_R == 0)
+        P_R = 0;
     
     analogWrite(PWM_L, abs(P_L));
     analogWrite(PWM_R, abs(P_R));
@@ -177,7 +182,7 @@ void startTurn(int turn_speed, int turn_degrees = RANDOM_TURN)
         turnRef = abs(turn_degrees) * degreeCalcConst;
         turnStart_L = posVal_L;
         turnStart_R = posVal_R;
-
+        
         if (turn_degrees > 0)
             set_motors(BACKWARD, FORWARD, turn_speed, turn_speed);
         else
@@ -186,7 +191,28 @@ void startTurn(int turn_speed, int turn_degrees = RANDOM_TURN)
     isMidtTurn = true;
 }
 
+//Check if turn is finished
 bool turnFinished()
 {
     return !isMidtTurn;
+}
+
+//When initiating wire follow, start by 
+void initFollowTurn(int chargerSide)
+{
+    float sensor_val = 0;
+    int turn_degree = 0;
+    if (chargerSide == LEFT_CHARGERSIDE)
+    {
+        sensor_val = analogRead(BOUNDRYSENSOR_R);
+        turn_degree = (sensor_val / BOUNDRY_CUTOFF_R) * -90;
+    }
+    else
+    {    
+        sensor_val = analogRead(BOUNDRYSENSOR_L);
+        turn_degree = (sensor_val / BOUNDRY_CUTOFF_L) * 90;
+    }
+
+    if (sensor_val > 100)
+        startTurn(MEDIUMSPEED, turn_degree);
 }

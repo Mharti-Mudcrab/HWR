@@ -28,8 +28,8 @@
 //Random turn flag
 #define RANDOM_TURN 0
 #define REVERSE_TURN 0
-#define MIN_RANDOM 100
-#define MAX_RANDOM 180 //Maximum in random(Min, Max) is Max-1
+#define MIN_RANDOM 90
+#define MAX_RANDOM 170 //Maximum in random(Min, Max) is Max-1
 
 //Program state flags
 #define PROG_CUT_GRASS 0
@@ -40,6 +40,7 @@
 //At boundry state flags
 #define BOUNDRY_DRIVE_BACKWARDS 0
 #define BOUNDRY_TURN 1
+#define USE_OFFSET true
 
 //Returning to charger state flags
 #define RETURN_FIND_WIRE 0
@@ -52,6 +53,7 @@
 //Wire follow method
 #define ZIG_ZAG 0
 #define STRAIGHT 1
+#define CORNER 2
 
 //Sensor request type
 #define LEFT_BOUNDRY 0
@@ -78,8 +80,8 @@
 #define PWM_L 11
 #define PWM_R 3
 //Boundry wire sensor pins
-#define BOUNDRYSENSOR_L A2
-#define BOUNDRYSENSOR_R A3
+#define BOUNDRYSENSOR_L A3
+#define BOUNDRYSENSOR_R A2
 //Battery sensor pin
 #define BATTERYSENSOR A0 
 //Bumper sensor pin
@@ -153,9 +155,9 @@ bool sensorRead(int sensorRequestType, bool useBoundryOffset = false)
     switch (sensorRequestType)
     {
     case LEFT_BOUNDRY:
-        return analogRead(BOUNDRYSENSOR_L) > BOUNDRY_CUTOFF_L + boundryOffset;
+        return analogRead(BOUNDRYSENSOR_L) > (BOUNDRY_CUTOFF_L + boundryOffset);
     case RIGHT_BOUNDRY:
-        return analogRead(BOUNDRYSENSOR_R) > BOUNDRY_CUTOFF_R  + boundryOffset;
+        return analogRead(BOUNDRYSENSOR_R) > (BOUNDRY_CUTOFF_R + boundryOffset);
     case ANY_BOUNDRY:
         return sensorRead(LEFT_BOUNDRY) || sensorRead(RIGHT_BOUNDRY);
     case BUMPER:
