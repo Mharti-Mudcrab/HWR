@@ -140,19 +140,22 @@ void loop()
                     set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED); 
                 break;
             case CORNER:
-                if (chargerSide == LEFT_CHARGERSIDE) 
+                if (turnFinished())
                 {
-                    if (sensorRead(LEFT_BOUNDRY))
-                        set_motors(FORWARD, FORWARD, MEDIUMSPEED, ZEROSPEED);
+                    if (chargerSide == LEFT_CHARGERSIDE) 
+                    {
+                        if (sensorRead(LEFT_BOUNDRY))
+                            set_motors(FORWARD, FORWARD, MEDIUMSPEED, ZEROSPEED);
+                        else
+                            set_motors(FORWARD, FORWARD, ZEROSPEED, MEDIUMSPEED);
+                    }
                     else
-                        set_motors(FORWARD, FORWARD, ZEROSPEED, MEDIUMSPEED);
-                }
-                else
-                {
-                    if (sensorRead(RIGHT_BOUNDRY))
-                        set_motors(FORWARD, FORWARD, ZEROSPEED, MEDIUMSPEED);
-                    else
-                        set_motors(FORWARD, FORWARD, MEDIUMSPEED, ZEROSPEED);
+                    {
+                        if (sensorRead(RIGHT_BOUNDRY))
+                            set_motors(FORWARD, FORWARD, ZEROSPEED, MEDIUMSPEED);
+                        else
+                            set_motors(FORWARD, FORWARD, MEDIUMSPEED, ZEROSPEED);
+                    }
                 }
                 break;
             }

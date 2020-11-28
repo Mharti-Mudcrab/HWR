@@ -197,7 +197,8 @@ bool turnFinished()
     return !isMidtTurn;
 }
 
-//When initiating wire follow, start by 
+//When initiating wire follow, start by turning a little to orient 
+//robot better for following wire
 void initFollowTurn(int chargerSide)
 {
     float sensor_val = 0;
