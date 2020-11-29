@@ -10,7 +10,7 @@ int returningState = 0;
 //Charger return variables
 int chargerSide = -1;
 int wireFollowMethod = CORNER; // ZIG_ZAG STRAIGHT CORNER
-unsigned long displayTimer;
+unsigned long displayTimer = 0;
 
 //Initialise the backend variables and setup pinmodes, timers and more.
 //All of it is done through setup_and_funcs.cpp and performed in functions.cpp
