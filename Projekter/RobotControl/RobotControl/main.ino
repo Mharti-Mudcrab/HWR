@@ -10,7 +10,10 @@ int returningState = 0;
 //Charger return variables
 int chargerSide = -1;
 int wireFollowMethod = CORNER; // ZIG_ZAG STRAIGHT CORNER
+
+//Display and buttons variables
 unsigned long displayTimer = 0;
+uint8_t buttons
 
 //Initialise the backend variables and setup pinmodes, timers and more.
 //All of it is done through setup_and_funcs.cpp and performed in functions.cpp
@@ -24,27 +27,6 @@ void setup()
 //-------------------------------------------------------
 void loop() 
 { 
-    uint8_t buttons = lcd.readButtons();
-    if (buttons)
-    {
-        if (buttons & BUTTON_LEFT)
-        {
-            switch (wireFollowMethod)
-            {
-            case ZIG_ZAG:
-                wireFollowMethod = STRAIGHT;
-                break;
-            case STRAIGHT:
-                wireFollowMethod = CORNER;
-                break;
-            case CORNER:
-                wireFollowMethod = ZIG_ZAG;
-                break;
-            }
-        }
-    }
-
-  
     // Battery level check
     if (!sensorRead(BATTERY))
     {
@@ -176,7 +158,25 @@ void loop()
         break;
     }
 
-
+    buttons = lcd.readButtons();
+    if (buttons)
+    {
+        if (buttons & BUTTON_LEFT)
+        {
+            switch (wireFollowMethod)
+            {
+            case ZIG_ZAG:
+                wireFollowMethod = STRAIGHT;
+                break;
+            case STRAIGHT:
+                wireFollowMethod = CORNER;
+                break;
+            case CORNER:
+                wireFollowMethod = ZIG_ZAG;
+                break;
+            }
+        }
+    }
 
     //Display
     if (displayTimer < millis())
