@@ -151,7 +151,7 @@ bool sensorRead(int sensorRequestType, bool useBoundryOffset = false)
 {   
     int boundryOffset = 0;
     if (useBoundryOffset)
-        int boundryOffset = 40;
+        int boundryOffset = 80;
     switch (sensorRequestType)
     {
     case LEFT_BOUNDRY:
