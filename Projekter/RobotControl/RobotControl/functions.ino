@@ -22,8 +22,6 @@ double Kp_L = 15.0;     //Position Kp - Left
 double Kp_R = 15.0;     //Position Kp - Right
 double Ki_L = 8.0;     //Integral Ki - Left
 double Ki_R = 8.0;     //Integral Ki - Right
-double Kd_L = 2.0;     //Derivative Kd - Left
-double Kd_R = 2.0;     //Derivative Kd - Right
 double deltaT = 0.08;
 int P_L = 0;              //P output control value for motor L
 int P_R = 0;              //P output control value for motor R
@@ -113,11 +111,8 @@ void motorControl()
     errorIntSum_R += errorVal_R * deltaT;
 
     //Calculation of the PWM value used to drive the motor
-    P_L = static_cast<int>(errorVal_L*Kp_L   +   errorIntSum_L*Ki_L); //   +   (errorVal_L-last_errorVal_L)*Kd_L);
-    P_R = static_cast<int>(errorVal_R*Kp_R   +   errorIntSum_R*Ki_R); //   +   (errorVal_R-last_errorVal_R)*Kd_R);
-
-    //last_errorVal_L = errorVal_L;                   //Saving current error
-    //last_errorVal_R = errorVal_R;
+    P_L = static_cast<int>(errorVal_L*Kp_L   +   errorIntSum_L*Ki_L);
+    P_R = static_cast<int>(errorVal_R*Kp_R   +   errorIntSum_R*Ki_R);
     
     //Limits the maximum output
     if (P_L > 255)
@@ -129,9 +124,10 @@ void motorControl()
     else if (P_R < 0)
         P_R = 0;
 
-    if (desired_speed_L == 0)
+    //Makes sure to stop with zero speed. 
+    if (desired_speed_L == ZEROSPEED)
         P_L = 0;
-    if (desired_speed_R == 0)
+    if (desired_speed_R == ZEROSPEED)
         P_R = 0;
     
     analogWrite(PWM_L, abs(P_L));
@@ -143,12 +139,12 @@ void set_motors(bool forward_L, bool forward_R, int speed_L, int speed_R)
     desired_speed_L = speed_L;
     desired_speed_R = speed_R;
  
-    if (forward_L) //This one has to be turned, because the left motor is opposite
+    if (forward_L)
         digitalWrite(DIR_L, HIGH);
     else
         digitalWrite(DIR_L, LOW);
     
-    if (!forward_R) 
+    if (!forward_R) //This one has to be opposite, because the right motor is flipped
         digitalWrite(DIR_R, HIGH);
     else
         digitalWrite(DIR_R, LOW);
@@ -156,8 +152,8 @@ void set_motors(bool forward_L, bool forward_R, int speed_L, int speed_R)
 
 //Method initiates turn, controlled in the controller by the isMidtTurn flag
 //Tels the robot to perform a turn on the spot with a determined angle
-//if turn_degrees == RANDOM_TURN calc random angle for turn_degrees
-//if turn_speed == REVERSE_TURN 
+//if turn_degrees == RANDOM_TURN, calculate random angle for turn_degrees
+//if turn_speed == REVERSE_TURN, reverse the turning process to return to starting point
 void startTurn(int turn_speed, int turn_degrees = RANDOM_TURN)
 {
     if (turn_speed == REVERSE_TURN && !isReverseTurning)

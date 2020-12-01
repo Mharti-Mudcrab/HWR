@@ -89,18 +89,26 @@ void loop()
         switch (returningState)
         {
         case RETURN_FIND_WIRE:
-            set_motors(FORWARD, FORWARD, LOWSPEED, LOWSPEED);
-            
-            if (sensorRead(ANY_BOUNDRY))
+            if(!turnFinished())
             {
-                returningState = RETURN_FOLLOW_WIRE;
-                if (sensorRead(LEFT_BOUNDRY))
-                    chargerSide = LEFT_CHARGERSIDE;
+                if(sensorRead(BUMPER))
+                    set_motors(BACKWARD, BACKWARD, LOWSPEED, LOWSPEED);
+                else if(sensorRead(DIRECTION_BACKWARD))
+                    startTurn(LOWSPEED);
                 else
-                    chargerSide = RIGHT_CHARGERSIDE;
+                    set_motors(FORWARD, FORWARD, LOWSPEED, LOWSPEED);
                 
-                if (wireFollowMethod == CORNER)
-                    initFollowTurn(chargerSide);
+                if (sensorRead(ANY_BOUNDRY))
+                {
+                    returningState = RETURN_FOLLOW_WIRE;
+                    if (sensorRead(LEFT_BOUNDRY))
+                        chargerSide = LEFT_CHARGERSIDE;
+                    else
+                        chargerSide = RIGHT_CHARGERSIDE;
+                    
+                    if (wireFollowMethod == CORNER)
+                        initFollowTurn(chargerSide);
+                }
             }
             break;
         case RETURN_FOLLOW_WIRE:

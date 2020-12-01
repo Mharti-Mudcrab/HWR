@@ -20,7 +20,7 @@
 #define FORWARD true
 
 //Speed values
-#define FULLSPEED 6   // With 80ms timer 9.63 ticks med battery uden er den 4.75
+#define FULLSPEED 6
 #define MEDIUMSPEED 4
 #define LOWSPEED 2
 #define ZEROSPEED 0
@@ -29,7 +29,7 @@
 #define RANDOM_TURN 0
 #define REVERSE_TURN 0
 #define MIN_RANDOM 90
-#define MAX_RANDOM 170 //Maximum in random(Min, Max) is Max-1
+#define MAX_RANDOM 171
 
 //Program state flags
 #define PROG_CUT_GRASS 0
@@ -62,6 +62,8 @@
 #define BUMPER 3
 #define BOUNDRY_OR_BUMPER 4
 #define BATTERY 5
+#define DIRECTION_FORWARD 6
+#define DIRECTION_BACKWARD 7
 
 //Sufficient battery level cutoff
 #define BATTERY_CUTOFF 5
@@ -161,11 +163,14 @@ bool sensorRead(int sensorRequestType, bool useBoundryOffset = false)
     case ANY_BOUNDRY:
         return sensorRead(LEFT_BOUNDRY) || sensorRead(RIGHT_BOUNDRY);
     case BUMPER:
-        // TODO
         return !(digitalRead(BUMPERSENSOR_F) && digitalRead(BUMPERSENSOR_B));
-    case BOUNDRY_OR_BUMPER:
-        return sensorRead(ANY_BOUNDRY) || sensorRead(BUMPER) || lcd.readButtons() & BUTTON_SELECT;
-    case BATTERY:
+    case BOUNDRY_OR_BUMPER: //Can be activated with SELECT button on the display
+        return sensorRead(ANY_BOUNDRY) || sensorRead(BUMPER) || lcd.readButtons() & BUTTON_SELECT; 
+    case BATTERY:           //Can be activated with RIGTH button on the display
         return analogRead(BATTERYSENSOR) * (5 / 1024.00) *2 > BATTERY_CUTOFF && !(lcd.readButtons() & BUTTON_RIGHT);
+    case DIRECTION_FORWARD:
+        return digitalRead(DIR_L) == HIGH && !(digitalRead(DIR_R) == HIGH)
+    case DIRECTION_BACKWARD:
+        return digitalRead(DIR_L) == LOW && !(digitalRead(DIR_R) == LOW)
     }
 }
