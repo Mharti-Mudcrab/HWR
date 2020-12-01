@@ -1,11 +1,11 @@
-// =================================== Setup ===================================
-// Setting up global flags, pins, timer and utility functions.
+//=================================== Setup ===================================
+//Setting up global flags, pins, timer and utility functions.
 
 //Include Libraries
 //----------------------------
-// Interrupt Lib
+//Interrupt Lib
 #include <EnableInterrupt.h>
-// Libs for display
+//Libs for display
 #include <Wire.h>
 #include <Adafruit_RGBLCDShield.h>
 #include <utility/Adafruit_MCP23017.h>

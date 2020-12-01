@@ -1,45 +1,45 @@
-// =================================== Functions =======================================
-// Provide general functionality for main program. setup backend variables and functions
+//=================================== Functions =======================================
+//Provide general functionality for main program. setup backend variables and functions
 
-// Variables for motorController
+//Variables for motorController
 //---------------------------------
-int current_speed_L = 0; // Variable to hold the speed value
-int desired_speed_L = 0; // Variable to hold the decired speed
-int last_Pos_L = 0;      // Variable to hold the last possition
+int current_speed_L = 0; //Variable to hold the speed value
+int desired_speed_L = 0; //Variable to hold the decired speed
+int last_Pos_L = 0;      //Variable to hold the last possition
 int current_speed_R = 0;
 int desired_speed_R = 0;
 int last_Pos_R = 0;
 
 //General P controller values
 //-----------------------------
-double errorVal_L = 0.0;  // The direct error value for L
-double errorVal_R = 0.0;  // The direct error value for R
+double errorVal_L = 0.0;  //The direct error value for L
+double errorVal_R = 0.0;  //The direct error value for R
 double last_errorVal_L = 0.0;
 double last_errorVal_R = 0.0;
-double errorIntSum_L = 0.0;     // Integral sum L
-double errorIntSum_R = 0.0;     // Integral sum R
-double Kp_L = 15.0;     // Position Kp - Left
-double Kp_R = 15.0;     // Position Kp - Right
-double Ki_L = 8.0;     // Integral Ki - Left
-double Ki_R = 8.0;     // Integral Ki - Right
-double Kd_L = 2.0;     // Derivative Kd - Left
-double Kd_R = 2.0;     // Derivative Kd - Right
+double errorIntSum_L = 0.0;     //Integral sum L
+double errorIntSum_R = 0.0;     //Integral sum R
+double Kp_L = 15.0;     //Position Kp - Left
+double Kp_R = 15.0;     //Position Kp - Right
+double Ki_L = 8.0;     //Integral Ki - Left
+double Ki_R = 8.0;     //Integral Ki - Right
+double Kd_L = 2.0;     //Derivative Kd - Left
+double Kd_R = 2.0;     //Derivative Kd - Right
 double deltaT = 0.08;
-int P_L = 0;              // P output control value for motor L
-int P_R = 0;              // P output control value for motor R
+int P_L = 0;              //P output control value for motor L
+int P_R = 0;              //P output control value for motor R
 
-// Variables for tick counter on motor
+//Variables for tick counter on motor
 //-------------------------------------
 int posVal_L = 0;
 int posVal_R = 0;
 
-// Variables for the value where the timer will interrupt
+//Variables for the value where the timer will interrupt
 //------------------------------------------------------
-int timer1_counter = 60536; // preload timer 65536-16MHz/256/100Hz (10ms) 59286(100ms) 60536(80ms)
+int timer1_counter = 60536; //preload timer 65536-16MHz/256/100Hz (10ms) 59286(100ms) 60536(80ms)
 
 //Turn variables
 //--------------
-double degreeCalcConst = 10/180.0; // Each wheel turns about 50 ticks pr. 180 degree turn.
+double degreeCalcConst = 10/180.0; //Each wheel turns about 50 ticks pr. 180 degree turn.
 int turnStart_L = 0;
 int turnStart_R = 0;
 int turnRef = 0;
@@ -47,8 +47,8 @@ bool isMidtTurn = false;
 bool isReverseTurning = false;
 
 //---------------------- Tick interrupt routine -----------------------
-// These are the interrupt service routines that handles the interrupts
-// from the encoder on motor L and R
+//These are the interrupt service routines that handles the interrupts
+//from the encoder on motor L and R
 //---------------------------------------------------------------------
 void enc_Int_Motor_L()
 {
@@ -64,10 +64,10 @@ void enc_Int_Motor_R()
     interrupts();   //Enable interrupts
 }
 
-// Interrupt service routine for handling the timer interrupt
-ISR(TIMER1_OVF_vect)        // interrupt service routine
+//Interrupt service routine for handling the timer interrupt
+ISR(TIMER1_OVF_vect)        //interrupt service routine
 {
-    TCNT1 = timer1_counter;   // preload timer
+    TCNT1 = timer1_counter;   //preload timer
     motorControl();
 }
 
@@ -84,7 +84,7 @@ void setup_func()
 }
 
 //--------------------------- P controller ------------------------------
-// This controller is set so that it assures constand speed on the motors
+//This controller is set so that it assures constand speed on the motors
 //-----------------------------------------------------------------------
 void motorControl()
 {
@@ -99,24 +99,24 @@ void motorControl()
           }
     }
     
-    // Perform actual controller calcs n' shit
-    current_speed_L = posVal_L - last_Pos_L;   // Calculating the speed of motors
+    //Perform actual controller calcs n' shit
+    current_speed_L = posVal_L - last_Pos_L;   //Calculating the speed of motors
     current_speed_R = posVal_R - last_Pos_R;
 
-    last_Pos_L = posVal_L;                     // Saving current tick-count 
+    last_Pos_L = posVal_L;                     //Saving current tick-count 
     last_Pos_R = posVal_R;                    
     
     //Calculating error values
-    errorVal_L = desired_speed_L - current_speed_L; // Speed error
+    errorVal_L = desired_speed_L - current_speed_L; //Speed error
     errorVal_R = desired_speed_R - current_speed_R;
-    errorIntSum_L += errorVal_L * deltaT;           // Integral
+    errorIntSum_L += errorVal_L * deltaT;           //Integral
     errorIntSum_R += errorVal_R * deltaT;
 
     //Calculation of the PWM value used to drive the motor
     P_L = static_cast<int>(errorVal_L*Kp_L   +   errorIntSum_L*Ki_L); //   +   (errorVal_L-last_errorVal_L)*Kd_L);
     P_R = static_cast<int>(errorVal_R*Kp_R   +   errorIntSum_R*Ki_R); //   +   (errorVal_R-last_errorVal_R)*Kd_R);
 
-    //last_errorVal_L = errorVal_L;                   // Saving current error
+    //last_errorVal_L = errorVal_L;                   //Saving current error
     //last_errorVal_R = errorVal_R;
     
     //Limits the maximum output
@@ -143,7 +143,7 @@ void set_motors(bool forward_L, bool forward_R, int speed_L, int speed_R)
     desired_speed_L = speed_L;
     desired_speed_R = speed_R;
  
-    if (forward_L) // This one has to be turned, because the left motor is opposite
+    if (forward_L) //This one has to be turned, because the left motor is opposite
         digitalWrite(DIR_L, HIGH);
     else
         digitalWrite(DIR_L, LOW);

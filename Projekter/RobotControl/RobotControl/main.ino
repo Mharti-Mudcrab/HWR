@@ -1,5 +1,5 @@
-// =================================== Main program ====================================
-// setup state variables and define main program no other functions than setup and loop.
+//=================================== Main program ====================================
+//setup state variables and define main program no other functions than setup and loop.
 
 //Program flag variables
 //----------------------
@@ -9,7 +9,7 @@ int returningState = 0;
 
 //Charger return variables
 int chargerSide = -1;
-int wireFollowMethod = CORNER; // ZIG_ZAG STRAIGHT CORNER
+int wireFollowMethod = CORNER; //ZIG_ZAG STRAIGHT CORNER
 
 //Display and buttons variables
 unsigned long displayTimer = 0;
@@ -23,11 +23,11 @@ void setup()
   setup_func();
 }
 
-// Program loop that calls methods in setup_and_funcs.cpp
+//Program loop that calls methods in setup_and_funcs.cpp
 //-------------------------------------------------------
 void loop() 
 { 
-    // Battery level check
+    //Battery level check
     if (!sensorRead(BATTERY))
     {
         if (programState == PROG_CUT_GRASS)
@@ -49,14 +49,14 @@ void loop()
         switch (boundryState)
         {
         case BOUNDRY_DRIVE_BACKWARDS:
-            // Backup slowly to accurately measure distance
+            //Backup slowly to accurately measure distance
             set_motors(BACKWARD, BACKWARD, MEDIUMSPEED, MEDIUMSPEED);
     
             //Back off until both boundry sensors are low
             if (!sensorRead(BOUNDRY_OR_BUMPER))
             {
                 boundryState = BOUNDRY_TURN;
-                // In case we are comming from charging.
+                //In case we are comming from charging.
                 if (chargerSide != -1)
                 {
                     if (chargerSide == LEFT_CHARGERSIDE)
@@ -76,7 +76,7 @@ void loop()
             if (turnFinished())
             {
                 programState = PROG_CUT_GRASS;
-                boundryState = BOUNDRY_DRIVE_BACKWARDS;  // resetter flag til næste boundry møde
+                boundryState = BOUNDRY_DRIVE_BACKWARDS;  //resetter flag til næste boundry møde
             }
             else if(sensorRead(BUMPER)) 
             {
@@ -106,15 +106,14 @@ void loop()
         case RETURN_FOLLOW_WIRE:
             switch (wireFollowMethod)
             {
-            case ZIG_ZAG:
-                // zig-zag approach. 
+            case ZIG_ZAG: //Zig-zag over the wire approach. 
                 if (sensorRead(LEFT_BOUNDRY, USE_OFFSET)) 
                     set_motors(FORWARD, FORWARD, LOWSPEED, MEDIUMSPEED);
                 else if (sensorRead(RIGHT_BOUNDRY, USE_OFFSET))
                     set_motors(FORWARD, FORWARD, MEDIUMSPEED, LOWSPEED);
                     
                 break;
-            case STRAIGHT:
+            case STRAIGHT: //Driving straight as much as possible over wire approach.
                 if (sensorRead(LEFT_BOUNDRY, USE_OFFSET))
                     set_motors(FORWARD, FORWARD, ZEROSPEED, MEDIUMSPEED);
                 else if (sensorRead(RIGHT_BOUNDRY, USE_OFFSET))
@@ -122,7 +121,7 @@ void loop()
                 else
                     set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED); 
                 break;
-            case CORNER:
+            case CORNER: //Driving within the wire, following it with corner of the robot approach.
                 if (turnFinished())
                 {
                     if (chargerSide == LEFT_CHARGERSIDE) 
@@ -223,7 +222,9 @@ void loop()
         case PROG_RETURNING:
             lcd.print("RETURN R");
             lcd.print(analogRead(BOUNDRYSENSOR_R));
-            lcd.print(" L");
+            lcd.print("    ");
+            lcd.setCursor(12, 1);
+            lcd.print("L");
             lcd.print(analogRead(BOUNDRYSENSOR_L));
             lcd.print("    ");
             lcd.setCursor(0, 1);
@@ -253,7 +254,11 @@ void loop()
             }
             break;
         case PROG_CHARGING:
-            lcd.print("CHARGING        ");
+            lcd.print("CHARGING    CS");
+            if (chargerSide == LEFT_CHARGERSIDE)
+                lcd.print("L");
+            else
+                lcd.print("R");
             lcd.setCursor(0, 1);
             lcd.print("BATTERY: ");
             lcd.print(analogRead(BATTERYSENSOR) * (5 / 1024.00) *2);
