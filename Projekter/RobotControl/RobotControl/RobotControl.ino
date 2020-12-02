@@ -20,50 +20,52 @@
 #define FORWARD true
 
 //Speed values
-#define FULLSPEED 6
+#define FULLSPEED   6
 #define MEDIUMSPEED 4
-#define LOWSPEED 2
-#define ZEROSPEED 0
+#define LOWSPEED    2
+#define ZEROSPEED   0
 
 //Random turn flag
-#define RANDOM_TURN 0
-#define REVERSE_TURN 0
-#define MIN_RANDOM 90
-#define MAX_RANDOM 171
+#define RANDOM_TURN   0
+#define REVERSE_TURN  0
+#define MIN_RANDOM    90
+#define MAX_RANDOM    171
 
 //Program state flags
-#define PROG_CUT_GRASS 0
+#define PROG_CUT_GRASS  0
 #define PROG_AT_BOUNDRY 1
-#define PROG_RETURNING 2
-#define PROG_CHARGING 3
+#define PROG_RETURNING  2
+#define PROG_CHARGING   3
 
 //At boundry state flags
 #define BOUNDRY_DRIVE_BACKWARDS 0
-#define BOUNDRY_TURN 1
-#define USE_OFFSET true
+#define BOUNDRY_TURN            1
+#define USE_OFFSET              true
 
 //Returning to charger state flags
-#define RETURN_FIND_WIRE 0
-#define RETURN_FOLLOW_WIRE 1
+#define RETURN_FIND_WIRE    0
+#define RETURN_FOLLOW_WIRE  1
 
 //Charger return side
-#define LEFT_CHARGERSIDE 0
+#define LEFT_CHARGERSIDE  0
 #define RIGHT_CHARGERSIDE 1
 
 //Wire follow method
-#define ZIG_ZAG 0
-#define STRAIGHT 1
-#define CORNER 2
+#define ZIG_ZAG   0
+#define STRAIGHT  1
+#define CORNER    2
 
 //Sensor request type
-#define LEFT_BOUNDRY 0
-#define RIGHT_BOUNDRY 1
-#define ANY_BOUNDRY 2
-#define BUMPER 3
-#define BOUNDRY_OR_BUMPER 4
-#define BATTERY 5
-#define DIRECTION_FORWARD 6
-#define DIRECTION_BACKWARD 7
+#define LEFT_BOUNDRY          0
+#define RIGHT_BOUNDRY         1
+#define ANY_BOUNDRY           2
+#define HIGHEST_BOUNDRY_LEFT  3
+#define HIGHEST_BOUNDRY_RIGHT 4
+#define BUMPER                5
+#define BOUNDRY_OR_BUMPER     6
+#define BATTERY               7
+#define DIRECTION_FORWARD     8
+#define DIRECTION_BACKWARD    9
 
 //Sufficient battery level cutoff
 #define BATTERY_CUTOFF 5
@@ -104,6 +106,8 @@ void setup_pins_and_timer(int timer1_counter)
   lcd.begin(16, 2);
   lcd.setBacklight(WHITE);
   lcd.print("Grassotron 3000");
+  lcd.setCursor(0,1);
+  lcd.print("Let's Cut Some G");
   
   //Initialzing random func with value from unconnectted pin A0
   int seed = analogRead(A1);
@@ -162,6 +166,10 @@ bool sensorRead(int sensorRequestType, bool useBoundryOffset = false)
         return analogRead(BOUNDRYSENSOR_R) > (BOUNDRY_CUTOFF_R + boundryOffset);
     case ANY_BOUNDRY:
         return sensorRead(LEFT_BOUNDRY) || sensorRead(RIGHT_BOUNDRY);
+    case HIGHEST_BOUNDRY_LEFT:
+        return analogRead(BOUNDRYSENSOR_L) > analogRead(BOUNDRYSENSOR_R) + 10;
+    case HIGHEST_BOUNDRY_RIGHT:
+        return analogRead(BOUNDRYSENSOR_R) > analogRead(BOUNDRYSENSOR_L) + 10;
     case BUMPER:
         return !(digitalRead(BUMPERSENSOR_F) && digitalRead(BUMPERSENSOR_B));
     case BOUNDRY_OR_BUMPER: //Can be activated with SELECT button on the display

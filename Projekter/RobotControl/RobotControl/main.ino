@@ -9,10 +9,10 @@ int returningState = 0;
 
 //Charger return variables
 int chargerSide = -1;
-int wireFollowMethod = CORNER; //ZIG_ZAG STRAIGHT CORNER
+int wireFollowMethod = ZIG_ZAG; //ZIG_ZAG STRAIGHT CORNER
 
 //Display and buttons variables
-unsigned long displayTimer = 0;
+unsigned long displayTimer = 3000;
 uint8_t buttons;
 
 //Initialise the backend variables and setup pinmodes, timers and more.
@@ -27,6 +27,34 @@ void setup()
 //-------------------------------------------------------
 void loop() 
 { 
+    //Read button inputs
+    buttons = lcd.readButtons();
+    
+    Serial.print("\tposval_L = ");
+    Serial.print(posVal_L);
+    Serial.print("\t posval_R = ");
+    Serial.print(posVal_R);
+    Serial.print("\t P_L = ");
+    Serial.print(abs(P_L));
+    Serial.print("\t P_R = ");
+    Serial.print(abs(P_R));
+    Serial.print("\t err_L = ");
+    Serial.print(errorVal_L);
+    Serial.print("\t err_R = ");
+    Serial.print(errorVal_R);
+    Serial.print("\t Intergal_L = ");
+    Serial.print(errorIntSum_L);
+    Serial.print("\t R = ");
+    Serial.print(errorIntSum_R);
+    Serial.print("\t cur_speed_L = ");
+    Serial.print(current_speed_L);
+    Serial.print("\t cur_speed_R = ");
+    Serial.print(current_speed_R);
+    Serial.print("\t desired = ");
+    Serial.println(desired_speed_L);
+
+    
+  
     //Battery level check
     if (!sensorRead(BATTERY))
     {
@@ -39,7 +67,7 @@ void loop()
     switch (programState)
     {
     case PROG_CUT_GRASS:
-        set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED); 
+        set_motors(FORWARD, FORWARD, FULLSPEED, FULLSPEED); 
                       
         if (sensorRead(BOUNDRY_OR_BUMPER))
             programState = PROG_AT_BOUNDRY;
@@ -108,6 +136,9 @@ void loop()
                     
                     if (wireFollowMethod == CORNER)
                         initFollowTurn(chargerSide);
+
+                    wireFollowMethod = (wireFollowMethod +2) %3;
+                    buttons = 16;
                 }
             }
             break;
@@ -115,11 +146,11 @@ void loop()
             switch (wireFollowMethod)
             {
             case ZIG_ZAG: //Zig-zag over the wire approach. 
-                if (sensorRead(LEFT_BOUNDRY, USE_OFFSET)) 
-                    set_motors(FORWARD, FORWARD, LOWSPEED, MEDIUMSPEED);
-                else if (sensorRead(RIGHT_BOUNDRY, USE_OFFSET))
-                    set_motors(FORWARD, FORWARD, MEDIUMSPEED, LOWSPEED);
-                    
+                set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED); 
+                if (sensorRead(HIGHEST_BOUNDRY_LEFT)) 
+                    set_motors(FORWARD, FORWARD, ZEROSPEED, MEDIUMSPEED);
+                else if(sensorRead(HIGHEST_BOUNDRY_RIGHT)) 
+                    set_motors(FORWARD, FORWARD, MEDIUMSPEED, ZEROSPEED);
                 break;
             case STRAIGHT: //Driving straight as much as possible over wire approach.
                 if (sensorRead(LEFT_BOUNDRY, USE_OFFSET))
@@ -165,29 +196,36 @@ void loop()
         break;
     }
 
-    buttons = lcd.readButtons();
+    
     if (buttons)
     {
         if (buttons & BUTTON_LEFT)
         {
+            lcd.setCursor(0, 1);
+            lcd.print("FOLLOW WIRE ");
             switch (wireFollowMethod)
             {
             case ZIG_ZAG:
                 wireFollowMethod = STRAIGHT;
+                lcd.print("S V");
                 break;
             case STRAIGHT:
                 wireFollowMethod = CORNER;
+                lcd.print("C V");
                 break;
             case CORNER:
                 wireFollowMethod = ZIG_ZAG;
+                lcd.print("Z V");
                 break;
             }
+            lcd.print(analogRead(BATTERYSENSOR) * (5 / 1024.00) *2);
         }
     }
 
     //Display
     if (displayTimer < millis())
     {
+        displayTimer = millis() + 500;
         lcd.setCursor(0, 0);
         switch (programState)
         {
@@ -218,7 +256,7 @@ void loop()
                 lcd.print("AT BOUNDRY      ");
                 lcd.setCursor(0, 1);
                 lcd.print("TURNING ");
-                lcd.print(turnRef / degreeCalcConst);
+                lcd.print(static_cast<int>(turnRef / degreeCalcConst));
                 if (digitalRead(DIR_L) == HIGH)
                     lcd.print("R     ");
                 else
@@ -228,14 +266,16 @@ void loop()
             }
             break;
         case PROG_RETURNING:
-            lcd.print("RETURN R");
-            lcd.print(analogRead(BOUNDRYSENSOR_R));
-            lcd.print("    ");
-            lcd.setCursor(12, 0);
-            lcd.print("L");
-            lcd.print(analogRead(BOUNDRYSENSOR_L));
-            lcd.print("    ");
-            lcd.setCursor(0, 1);
+            if(returningState != RETURN_FOLLOW_WIRE) {
+                lcd.print("RETURN R");
+                lcd.print(analogRead(BOUNDRYSENSOR_R));
+                lcd.print("    ");
+                lcd.setCursor(12, 0);
+                lcd.print("L");
+                lcd.print(analogRead(BOUNDRYSENSOR_L));
+                lcd.print("    ");
+                lcd.setCursor(0, 1);
+            }
             switch (returningState)
             {
             case RETURN_FIND_WIRE:
@@ -243,21 +283,7 @@ void loop()
                 lcd.print(analogRead(BATTERYSENSOR) * (5 / 1024.00) *2);
                 break;
             case RETURN_FOLLOW_WIRE:
-                lcd.print("FOLLOW WIRE ");
-                
-                switch (wireFollowMethod)
-                {
-                case ZIG_ZAG:
-                    lcd.print("Z V");
-                    break;
-                case STRAIGHT:
-                    lcd.print("S V");
-                    break;
-                case CORNER:
-                    lcd.print("C V");
-                    break;
-                }
-                lcd.print(analogRead(BATTERYSENSOR) * (5 / 1024.00) *2);
+                //Optimised to be displayed base on event.
                 break;
             }
             break;
