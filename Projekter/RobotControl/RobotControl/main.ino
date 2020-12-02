@@ -29,32 +29,7 @@ void loop()
 { 
     //Read button inputs
     buttons = lcd.readButtons();
-    
-    Serial.print("\tposval_L = ");
-    Serial.print(posVal_L);
-    Serial.print("\t posval_R = ");
-    Serial.print(posVal_R);
-    Serial.print("\t P_L = ");
-    Serial.print(abs(P_L));
-    Serial.print("\t P_R = ");
-    Serial.print(abs(P_R));
-    Serial.print("\t err_L = ");
-    Serial.print(errorVal_L);
-    Serial.print("\t err_R = ");
-    Serial.print(errorVal_R);
-    Serial.print("\t Intergal_L = ");
-    Serial.print(errorIntSum_L);
-    Serial.print("\t R = ");
-    Serial.print(errorIntSum_R);
-    Serial.print("\t cur_speed_L = ");
-    Serial.print(current_speed_L);
-    Serial.print("\t cur_speed_R = ");
-    Serial.print(current_speed_R);
-    Serial.print("\t desired = ");
-    Serial.println(desired_speed_L);
 
-    
-  
     //Battery level check
     if (!sensorRead(BATTERY))
     {
@@ -63,7 +38,8 @@ void loop()
         else if(boundryState == BOUNDRY_TURN)  
             startTurn(REVERSE_TURN);
     }
-    
+
+    //Main program state machine
     switch (programState)
     {
     case PROG_CUT_GRASS:
@@ -196,7 +172,7 @@ void loop()
         break;
     }
 
-    
+    //Toggle and display fire follow method
     if (buttons)
     {
         if (buttons & BUTTON_LEFT)
@@ -222,7 +198,7 @@ void loop()
         }
     }
 
-    //Display
+    //Update display every 500ms. as default
     if (displayTimer < millis())
     {
         displayTimer = millis() + 500;
