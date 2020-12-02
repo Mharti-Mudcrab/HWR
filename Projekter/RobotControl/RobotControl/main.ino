@@ -13,7 +13,7 @@ int wireFollowMethod = CORNER; //ZIG_ZAG STRAIGHT CORNER
 
 //Display and buttons variables
 unsigned long displayTimer = 0;
-uint8_t buttons
+uint8_t buttons;
 
 //Initialise the backend variables and setup pinmodes, timers and more.
 //All of it is done through setup_and_funcs.cpp and performed in functions.cpp
@@ -89,7 +89,7 @@ void loop()
         switch (returningState)
         {
         case RETURN_FIND_WIRE:
-            if(!turnFinished())
+            if(turnFinished())
             {
                 if(sensorRead(BUMPER))
                     set_motors(BACKWARD, BACKWARD, LOWSPEED, LOWSPEED);
@@ -231,7 +231,7 @@ void loop()
             lcd.print("RETURN R");
             lcd.print(analogRead(BOUNDRYSENSOR_R));
             lcd.print("    ");
-            lcd.setCursor(12, 1);
+            lcd.setCursor(12, 0);
             lcd.print("L");
             lcd.print(analogRead(BOUNDRYSENSOR_L));
             lcd.print("    ");

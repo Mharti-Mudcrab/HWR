@@ -37,7 +37,7 @@ int timer1_counter = 60536; //preload timer 65536-16MHz/256/100Hz (10ms) 59286(1
 
 //Turn variables
 //--------------
-double degreeCalcConst = 10/180.0; //Each wheel turns about 50 ticks pr. 180 degree turn.
+double degreeCalcConst = 20/180.0; //Each wheel turns about 50 ticks pr. 180 degree turn.
 int turnStart_L = 0;
 int turnStart_R = 0;
 int turnRef = 0;

@@ -169,8 +169,8 @@ bool sensorRead(int sensorRequestType, bool useBoundryOffset = false)
     case BATTERY:           //Can be activated with RIGTH button on the display
         return analogRead(BATTERYSENSOR) * (5 / 1024.00) *2 > BATTERY_CUTOFF && !(lcd.readButtons() & BUTTON_RIGHT);
     case DIRECTION_FORWARD:
-        return digitalRead(DIR_L) == HIGH && !(digitalRead(DIR_R) == HIGH)
+        return digitalRead(DIR_L) == HIGH && !(digitalRead(DIR_R) == HIGH);
     case DIRECTION_BACKWARD:
-        return digitalRead(DIR_L) == LOW && !(digitalRead(DIR_R) == LOW)
+        return digitalRead(DIR_L) == LOW && !(digitalRead(DIR_R) == LOW);
     }
 }
