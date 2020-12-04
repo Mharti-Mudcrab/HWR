@@ -49,6 +49,7 @@
 //Charger return side
 #define LEFT_CHARGERSIDE  0
 #define RIGHT_CHARGERSIDE 1
+#define NO_CHARGERSIDE    2
 
 //Wire follow method
 #define ZIG_ZAG   0

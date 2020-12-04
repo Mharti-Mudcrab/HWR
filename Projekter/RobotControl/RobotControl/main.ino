@@ -8,7 +8,7 @@ int boundryState = 0;
 int returningState = 0;
 
 //Charger return variables
-int chargerSide = -1;
+int chargerSide = NO_CHARGERSIDE;
 int wireFollowMethod = ZIG_ZAG; //ZIG_ZAG STRAIGHT CORNER
 
 //Display and buttons variables
@@ -61,14 +61,14 @@ void loop()
             {
                 boundryState = BOUNDRY_TURN;
                 //In case we are comming from charging.
-                if (chargerSide != -1)
+                if (chargerSide != NO_CHARGERSIDE)
                 {
                     if (chargerSide == LEFT_CHARGERSIDE)
                         startTurn(MEDIUMSPEED, -90);
                     else if (chargerSide == RIGHT_CHARGERSIDE)
                         startTurn(MEDIUMSPEED, 90);
                         
-                    chargerSide = -1;
+                    chargerSide = NO_CHARGERSIDE;
                 }
                 else
                 {
