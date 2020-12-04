@@ -1,62 +1,79 @@
-//=================================== Setup ===================================
-//Setting up global flags, pins, timer and utility functions.
+//==============================================================================
+//                                RobotControl
+//        Setup project, by defineing:
+//          Include Libraries
+//          Defines global variables, constants, enum's, flag's, and timere
+//          Defines I/O pin's
+//
+//        Setup utility functions:
+//          setup serial communication
+//          setup lcd-screen
+//          setup I/O pind's input type.
+//==============================================================================
 
-//Include Libraries
-//----------------------------
-//Interrupt Lib
+
+//== Include Libraries =========================================================
 #include <EnableInterrupt.h>
 //Libs for display
 #include <Wire.h>
 #include <Adafruit_RGBLCDShield.h>
 #include <utility/Adafruit_MCP23017.h>
 
-//Define global flags and vars
-//----------------------------
-//Display color
-#define WHITE 0x7
+//== Defines global variables, constants, enum's, flag's, and timere ===========
 
-//Direction
+// Motor: Direction, ...
 #define BACKWARD false
 #define FORWARD true
-
-//Speed values
+// .. Enumlist for speed, ...
 #define FULLSPEED   6
 #define MEDIUMSPEED 4
 #define LOWSPEED    2
 #define ZEROSPEED   0
+// .. encoders pins, ...
+#define ENC_L 2
+#define ENC_R 4
+// .. control pins, Direction and PWM. OBS: NOTE(brake not used)
+#define DIR_L 13
+#define DIR_R 12
+#define PWM_L 11
+#define PWM_R 3
 
-//Random turn flag
+// Rotation: Flag for random, ...
 #define RANDOM_TURN   0
+// .. Flag for turn, ...
 #define REVERSE_TURN  0
+// .. Minimum angle, ...
 #define MIN_RANDOM    90
+// .. Maximum angle.
 #define MAX_RANDOM    171
 
-//Program state flags
+// State machine for program main: Enumlist.
 #define PROG_CUT_GRASS  0
 #define PROG_AT_BOUNDRY 1
 #define PROG_RETURNING  2
 #define PROG_CHARGING   3
 
-//At boundry state flags
+// State machine for boundry and bumper: Enumlist, ...
 #define BOUNDRY_DRIVE_BACKWARDS 0
 #define BOUNDRY_TURN            1
+//  .. Global bool.
 #define USE_OFFSET              true
 
-//Returning to charger state flags
+// State machine for finding and foloowing wire: Enumlist.
 #define RETURN_FIND_WIRE    0
 #define RETURN_FOLLOW_WIRE  1
 
-//Charger return side
+// Charger side: Enumlist.
 #define LEFT_CHARGERSIDE  0
 #define RIGHT_CHARGERSIDE 1
 #define UNKNOWN           2
 
-//Wire follow method
+// Following wire method: Enumlist.
 #define ZIG_ZAG   0
 #define STRAIGHT  1
 #define CORNER    2
 
-//Sensor request type
+// Sensore: Enumliste, ...
 #define LEFT_BOUNDRY          0
 #define RIGHT_BOUNDRY         1
 #define ANY_BOUNDRY           2
@@ -68,82 +85,66 @@
 #define BATTERY               8
 #define DIRECTION_FORWARD     9
 #define DIRECTION_BACKWARD    10
-
-//Sufficient battery level cutoff
-#define BATTERY_CUTOFF 5.2
-
-//Boundry sensor cutoff
-#define BOUNDRY_CUTOFF_L 180 // venstre er for hurtig med høj hastighed.
-#define BOUNDRY_CUTOFF_R 180 // Right sensor is vasly more sensitive than other.
-
-//  Pins
-//Motor encoders pins
-#define ENC_L 2
-#define ENC_R 4
-//Motor control pins (brake not used)
-#define DIR_L 13
-#define DIR_R 12
-#define PWM_L 11
-#define PWM_R 3
-//Boundry wire sensor pins
+// ..  Sensor pin's Analoge ...
 #define BOUNDRYSENSOR_L A3
 #define BOUNDRYSENSOR_R A2
-//Battery sensor pin
 #define BATTERYSENSOR A0
-//Bumper sensor pin
+// .. og digitale, ...
 #define BUMPERSENSOR_F 6
 #define BUMPERSENSOR_B 7
+// .. Sensor cutoff for Battery ...
+#define BATTERY_CUTOFF 5.2
+// .. Sensor cutoff for Boundry Left and Right ...
+#define BOUNDRY_CUTOFF_L 180
+#define BOUNDRY_CUTOFF_R 180
 
-// Initialise lcd which controls the display trough I^2C
-// The shield uses the I^2C SCL and SDA pins
-Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
+// Display: Constants.
+#define WHITE 0x7
 
-//Setup method for pins and timer
+
+//== Setup method for pins and timer ===========================================
 void setup_pins_and_timer(int timer1_counter)
 {
-  //Setup serial for debugging.
+  //== Setup serial for debugging.
   Serial.begin(9600);
+  //== Initialise dispaly.
+  Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
+  // OBS: NOTE(The shield uses the I^2C SCL and SDA pin's)
 
-  //Setup display with LCD's number of columns and rows:
+  // Display start screen.
   lcd.begin(16, 2);
   lcd.setBacklight(WHITE);
   lcd.print("Grassotron 3000");
   lcd.setCursor(0,1);
   lcd.print("Let's Cut Some G");
 
-  //Initialzing random func with value from unconnectted pin A0
+  //== Initialzing random func with value from unconnectted pin A1 (noise)
   int seed = analogRead(A1);
-  //Serial.print("Seed = ");
-  //Serial.println(seed);
   randomSeed(seed);
 
-  //Pin modes for boundrySensors
-  pinMode(BOUNDRYSENSOR_L, INPUT);
-  digitalWrite(BOUNDRYSENSOR_L, LOW); // maybe HIGH ?
-  pinMode(BOUNDRYSENSOR_R, INPUT);
-  digitalWrite(BOUNDRYSENSOR_L, LOW);
-  //analogReference(INTERNAL); // maybe EXTERNAL ?
+  //== Pin modes for boundrySensors
+  pinMode(BOUNDRYSENSOR_L, INPUT);        // sets the pin A3 to input
+  digitalWrite(BOUNDRYSENSOR_L, LOW);     // use the internal pulldown resistor
+  pinMode(BOUNDRYSENSOR_R, INPUT);        // sets the pin A2 to input
+  digitalWrite(BOUNDRYSENSOR_L, LOW);     // use the internal pulldown resistor
 
-  //Pin modes for the encoders
-  pinMode(ENC_L, INPUT);     // set the pin 2 to input
-  digitalWrite(ENC_L, LOW);  // use the internal pulldown resistor
-  pinMode(ENC_R, INPUT);     // set the pin 4 to input
-  digitalWrite(ENC_R, LOW);  // use the internal pulldown resistor
+  //== Pin modes for the encoders
+  pinMode(ENC_L, INPUT);                  // sets the pin 2 to input
+  digitalWrite(ENC_L, LOW);               // use the internal pulldown resistor
+  pinMode(ENC_R, INPUT);                  // sets the pin 4 to input
+  digitalWrite(ENC_R, LOW);               // use the internal pulldown resistor
 
-  //Setup pins or motors
-  //--------------------
-  pinMode(DIR_L, OUTPUT);    // Pin controlling the direction of the motor
-  pinMode(PWM_L, OUTPUT);    // Pin for controlling the speed of the motor
-  digitalWrite(DIR_L, LOW);  // Setting the direction of the motor to forward
-  analogWrite(PWM_L, ZEROSPEED);     // Initializing the motor at speed 0
-
+  //== Setup pins for motors
+  pinMode(DIR_L, OUTPUT);       // Pin controlling the direction of the motor
+  pinMode(PWM_L, OUTPUT);       // Pin for controlling the speed of the motor
+  digitalWrite(DIR_L, LOW);     // Setting the direction of the motor to forward
+  analogWrite(PWM_L, ZEROSPEED);// Initializing the motor at speed 0
   pinMode(DIR_R, OUTPUT);
   pinMode(PWM_R, OUTPUT);
   digitalWrite(DIR_R, HIGH);
   analogWrite(PWM_R, ZEROSPEED);
 
-  //Initialize timer1 used for the P motor controller for the motors
-  //-----------------------------------------------------------------
+  //== Initialize timer1 used for the P motor controller for the motors =======
   noInterrupts();           // disable all interrupts
   TCCR1A = 0;
   TCCR1B = 0;
@@ -154,10 +155,10 @@ void setup_pins_and_timer(int timer1_counter)
   interrupts();             // enable all interrupts
 }
 
-//Method for returning state of chosen sensor(s)
-bool sensorRead(int sensorRequestType, bool useOffset = false)
-{
+//== Method for returning state of chosen sensor(s), with offset option. =======
+bool sensorRead(int sensorRequestType, bool useOffset = false) {
     int offsetVal = 0;
+    //==  Update offsetVal if useOffset depending on sensorRequestType. ========
     if (useOffset && sensorRequestType == BATTERY)
         offsetVal = 2;
     else if(useOffset && (sensorRequestType == HIGHEST_BOUNDRY_LEFT || sensorRequestType == HIGHEST_BOUNDRY_RIGHT))
@@ -165,9 +166,9 @@ bool sensorRead(int sensorRequestType, bool useOffset = false)
     else if (useOffset)
         offsetVal = 0;
 
+    //== switch depending on sensorRequestType==================================
+    switch (sensorRequestType) {
 
-    switch (sensorRequestType)
-    {
     case LEFT_BOUNDRY:
         return analogRead(BOUNDRYSENSOR_L) > (BOUNDRY_CUTOFF_L + offsetVal) || lcd.readButtons() & BUTTON_UP;
     case RIGHT_BOUNDRY:

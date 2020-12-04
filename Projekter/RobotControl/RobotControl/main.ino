@@ -65,17 +65,18 @@ void loop() {
             // Drive backword until both boundry sensors are low
             if (!sensorRead(BOUNDRY_OR_BUMPER)) {
                 boundryState = BOUNDRY_TURN;
-                // In case we are comming from charging.
-                if (chargerSide != UNKNOWN) {
-                    if (chargerSide == LEFT_CHARGERSIDE)
-                        startTurn(MEDIUMSPEED, -90);
-                    else if (chargerSide == RIGHT_CHARGERSIDE)
-                        startTurn(MEDIUMSPEED, 90);
-                    chargerSide = UNKNOWN;
-                } else {
-                    startTurn(MEDIUMSPEED);
-                }
+                startTurn(MEDIUMSPEED);
             }
+            // In case we are comming from charging, and bumper is free.
+            else if (!sensorRead(BUMPER) && chargerSide != UNKNOWN) {
+                if (chargerSide == LEFT_CHARGERSIDE)
+                    startTurn(MEDIUMSPEED, -90);
+                else if (chargerSide == RIGHT_CHARGERSIDE)
+                    startTurn(MEDIUMSPEED, 90);
+                chargerSide = UNKNOWN;
+                boundryState = BOUNDRY_TURN;
+            }
+
             break;
 
         case BOUNDRY_TURN:
@@ -86,7 +87,7 @@ void loop() {
                 boundryState = BOUNDRY_DRIVE_BACKWARDS;
             }
             else if(sensorRead(BUMPER) {
-// ifa tur code heer
+                //== ROOM for IMPROVEMENT ======================================
                 boundryState = BOUNDRY_DRIVE_BACKWARDS;
             }
             break;
