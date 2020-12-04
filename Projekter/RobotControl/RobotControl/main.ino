@@ -1,12 +1,5 @@
 //=================================== Main program ====================================
 //setup state variables and define main program no other functions than setup and loop.
-
-
-
-sdfskdfsdf
-
-
-
 //Program flag variables
 //----------------------
 int programState = 0;
@@ -24,15 +17,15 @@ uint8_t buttons;
 //Initialise the backend variables and setup pinmodes, timers and more.
 //All of it is done through setup_and_funcs.cpp and performed in functions.cpp
 //----------------------------------------------------------------------------
-void setup() 
+void setup()
 {
   setup_func();
 }
 
 //Program loop that calls methods in functions.ino and sensorRead() from RobotControl.ino
 //---------------------------------------------------------------------------------------
-void loop() 
-{ 
+void loop()
+{
     //Read button inputs
     buttons = lcd.readButtons();
 
@@ -41,7 +34,7 @@ void loop()
     {
         if (programState == PROG_CUT_GRASS)
             programState = PROG_RETURNING;
-        else if(boundryState == BOUNDRY_TURN)  
+        else if(boundryState == BOUNDRY_TURN)
             startTurn(REVERSE_TURN);
     }
 
@@ -49,11 +42,11 @@ void loop()
     switch (programState)
     {
     case PROG_CUT_GRASS:
-        set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED); 
-                      
+        set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED);
+
         if (sensorRead(BOUNDRY_OR_BUMPER))
             programState = PROG_AT_BOUNDRY;
-            
+
         break;
     case PROG_AT_BOUNDRY:
         switch (boundryState)
@@ -69,7 +62,7 @@ void loop()
                     startTurn(MEDIUMSPEED, 90);
                 backwards_timer = 0;
             }
-    
+
             //Back off until both boundry sensors are low
             if (!sensorRead(BOUNDRY_OR_BUMPER))
             {
@@ -81,7 +74,7 @@ void loop()
                         startTurn(MEDIUMSPEED, -90);
                     else if (chargerSide == RIGHT_CHARGERSIDE)
                         startTurn(MEDIUMSPEED, 90);
-                        
+
                     chargerSide = NO_CHARGERSIDE;
                 }
                 else
@@ -96,7 +89,7 @@ void loop()
                 programState = PROG_CUT_GRASS;
                 boundryState = BOUNDRY_DRIVE_BACKWARDS;  //resetter flag til næste boundry møde
             }
-            else if(sensorRead(BUMPER)) 
+            else if(sensorRead(BUMPER))
             {
                 boundryState = BOUNDRY_DRIVE_BACKWARDS;
             }
@@ -115,7 +108,7 @@ void loop()
                     startTurn(LOWSPEED);
                 else
                     set_motors(FORWARD, FORWARD, LOWSPEED, LOWSPEED);
-                
+
                 if (sensorRead(ANY_BOUNDRY))
                 {
                     returningState = RETURN_FOLLOW_WIRE;
@@ -123,7 +116,7 @@ void loop()
                         chargerSide = LEFT_CHARGERSIDE;
                     else
                         chargerSide = RIGHT_CHARGERSIDE;
-                    
+
                     initFollowTurn(chargerSide);
 
                     wireFollowMethod = (wireFollowMethod +2) %3;
@@ -134,11 +127,11 @@ void loop()
         case RETURN_FOLLOW_WIRE:
             switch (wireFollowMethod)
             {
-            case ZIG_ZAG: //Zig-zag over the wire approach. 
-                set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED); 
-                if (sensorRead(HIGHEST_BOUNDRY_LEFT, USE_OFFSET)) 
+            case ZIG_ZAG: //Zig-zag over the wire approach.
+                set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED);
+                if (sensorRead(HIGHEST_BOUNDRY_LEFT, USE_OFFSET))
                     set_motors(FORWARD, FORWARD, ZEROSPEED, MEDIUMSPEED);
-                else if(sensorRead(HIGHEST_BOUNDRY_RIGHT, USE_OFFSET)) 
+                else if(sensorRead(HIGHEST_BOUNDRY_RIGHT, USE_OFFSET))
                     set_motors(FORWARD, FORWARD, MEDIUMSPEED, ZEROSPEED);
                 break;
             case STRAIGHT: //Driving straight as much as possible over wire approach.
@@ -147,12 +140,12 @@ void loop()
                 else if (sensorRead(RIGHT_BOUNDRY, USE_OFFSET))
                     set_motors(FORWARD, FORWARD, MEDIUMSPEED, ZEROSPEED);
                 else
-                    set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED); 
+                    set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED);
                 break;
             case CORNER: //Driving within the wire, following it with corner of the robot approach.
                 if (turnFinished())
                 {
-                    if (chargerSide == LEFT_CHARGERSIDE) 
+                    if (chargerSide == LEFT_CHARGERSIDE)
                     {
                         if (sensorRead(LEFT_BOUNDRY))
                             set_motors(FORWARD, FORWARD, MEDIUMSPEED, ZEROSPEED);
@@ -169,10 +162,10 @@ void loop()
                 }
                 break;
             }
-            
+
             if (sensorRead(ZERO_BOUNDRY_RESPONSE))
                 returningState = RETURN_FIND_WIRE;
-              
+
             if (sensorRead(BUMPER))
             {
                 set_motors(FORWARD, FORWARD, ZEROSPEED, ZEROSPEED);
