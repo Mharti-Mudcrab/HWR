@@ -9,7 +9,7 @@ int returningState = 0;
 
 //Charger return variables
 int chargerSide = NO_CHARGERSIDE;
-int wireFollowMethod = ZIG_ZAG; //ZIG_ZAG STRAIGHT CORNER
+int wireFollowMethod = STRAIGHT; //ZIG_ZAG STRAIGHT CORNER
 
 //Display and buttons variables
 unsigned long displayTimer = 3000;
@@ -43,7 +43,7 @@ void loop()
     switch (programState)
     {
     case PROG_CUT_GRASS:
-        set_motors(FORWARD, FORWARD, FULLSPEED, FULLSPEED); 
+        set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED); 
                       
         if (sensorRead(BOUNDRY_OR_BUMPER))
             programState = PROG_AT_BOUNDRY;
@@ -54,7 +54,15 @@ void loop()
         {
         case BOUNDRY_DRIVE_BACKWARDS:
             //Backup slowly to accurately measure distance
-            set_motors(BACKWARD, BACKWARD, MEDIUMSPEED, MEDIUMSPEED);
+            set_motors(BACKWARD, BACKWARD, LOWSPEED, LOWSPEED);
+
+            if (backwards_timer > 15) {
+                if (sensorRead(HIGHEST_BOUNDRY_LEFT))
+                    startTurn(MEDIUMSPEED, -90);
+                else
+                    startTurn(MEDIUMSPEED, 90);
+                backwards_timer = 0;
+            }
     
             //Back off until both boundry sensors are low
             if (!sensorRead(BOUNDRY_OR_BUMPER))
@@ -110,11 +118,11 @@ void loop()
                     else
                         chargerSide = RIGHT_CHARGERSIDE;
                     
-                    if (wireFollowMethod == CORNER)
-                        initFollowTurn(chargerSide);
+                    //if (wireFollowMethod == CORNER)
+                    initFollowTurn(chargerSide);
 
                     wireFollowMethod = (wireFollowMethod +2) %3;
-                    buttons = 16;
+                    buttons = BUTTON_LEFT;
                 }
             }
             break;
@@ -123,9 +131,9 @@ void loop()
             {
             case ZIG_ZAG: //Zig-zag over the wire approach. 
                 set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED); 
-                if (sensorRead(HIGHEST_BOUNDRY_LEFT)) 
+                if (sensorRead(HIGHEST_BOUNDRY_LEFT, USE_OFFSET)) 
                     set_motors(FORWARD, FORWARD, ZEROSPEED, MEDIUMSPEED);
-                else if(sensorRead(HIGHEST_BOUNDRY_RIGHT)) 
+                else if(sensorRead(HIGHEST_BOUNDRY_RIGHT, USE_OFFSET)) 
                     set_motors(FORWARD, FORWARD, MEDIUMSPEED, ZEROSPEED);
                 break;
             case STRAIGHT: //Driving straight as much as possible over wire approach.
@@ -156,6 +164,9 @@ void loop()
                 }
                 break;
             }
+            
+            if (sensorRead(ZERO_BOUNDRY_RESPONSE))
+                returningState = RETURN_FIND_WIRE;
               
             if (sensorRead(BUMPER))
             {
@@ -264,7 +275,7 @@ void loop()
             }
             break;
         case PROG_CHARGING:
-            lcd.print("CHARGING    CS");
+            lcd.print("CHARGING    CS ");
             if (chargerSide == LEFT_CHARGERSIDE)
                 lcd.print("L");
             else

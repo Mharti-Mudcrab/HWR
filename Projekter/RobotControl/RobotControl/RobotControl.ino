@@ -62,18 +62,19 @@
 #define ANY_BOUNDRY           2
 #define HIGHEST_BOUNDRY_LEFT  3
 #define HIGHEST_BOUNDRY_RIGHT 4
-#define BUMPER                5
-#define BOUNDRY_OR_BUMPER     6
-#define BATTERY               7
-#define DIRECTION_FORWARD     8
-#define DIRECTION_BACKWARD    9
+#define ZERO_BOUNDRY_RESPONSE 5
+#define BUMPER                6
+#define BOUNDRY_OR_BUMPER     7
+#define BATTERY               8
+#define DIRECTION_FORWARD     9
+#define DIRECTION_BACKWARD    10
 
 //Sufficient battery level cutoff
-#define BATTERY_CUTOFF 6.2
+#define BATTERY_CUTOFF 5.2
 
 //Boundry sensor cutoff
-#define BOUNDRY_CUTOFF_L 200 // venstre er for hurtig med høj hastighed.
-#define BOUNDRY_CUTOFF_R 200 // Right sensor is vasly more sensitive than other.
+#define BOUNDRY_CUTOFF_L 180 // venstre er for hurtig med høj hastighed.
+#define BOUNDRY_CUTOFF_R 180 // Right sensor is vasly more sensitive than other.
 
 //  Pins
 //Motor encoders pins
@@ -156,30 +157,35 @@ void setup_pins_and_timer(int timer1_counter)
 //Method for returning state of chosen sensor(s)
 bool sensorRead(int sensorRequestType, bool useOffset = false) 
 {   
-    int offset = 0;
+    int offsetVal = 0;
     if (useOffset && sensorRequestType == BATTERY)
-        offset = 1;
+        offsetVal = 2;
+    else if(useOffset && (sensorRequestType == HIGHEST_BOUNDRY_LEFT || sensorRequestType == HIGHEST_BOUNDRY_RIGHT))
+        offsetVal = 10;
     else if (useOffset)
-        offset = 80;
+        offsetVal = 0;
+    
         
     switch (sensorRequestType)
     {
     case LEFT_BOUNDRY:
-        return analogRead(BOUNDRYSENSOR_L) > (BOUNDRY_CUTOFF_L + offset);
+        return analogRead(BOUNDRYSENSOR_L) > (BOUNDRY_CUTOFF_L + offsetVal) || lcd.readButtons() & BUTTON_UP;
     case RIGHT_BOUNDRY:
-        return analogRead(BOUNDRYSENSOR_R) > (BOUNDRY_CUTOFF_R + offset);
+        return analogRead(BOUNDRYSENSOR_R) > (BOUNDRY_CUTOFF_R + offsetVal) || lcd.readButtons() & BUTTON_UP;
     case ANY_BOUNDRY:
         return sensorRead(LEFT_BOUNDRY) || sensorRead(RIGHT_BOUNDRY);
     case HIGHEST_BOUNDRY_LEFT:
-        return analogRead(BOUNDRYSENSOR_L) > analogRead(BOUNDRYSENSOR_R) + 10;
+        return analogRead(BOUNDRYSENSOR_L) > analogRead(BOUNDRYSENSOR_R) + offsetVal;
     case HIGHEST_BOUNDRY_RIGHT:
-        return analogRead(BOUNDRYSENSOR_R) > analogRead(BOUNDRYSENSOR_L) + 10;
+        return analogRead(BOUNDRYSENSOR_R) > analogRead(BOUNDRYSENSOR_L) + offsetVal;
+    case ZERO_BOUNDRY_RESPONSE:
+        return analogRead(BOUNDRYSENSOR_R) == 0 && analogRead(BOUNDRYSENSOR_L) == 0;
     case BUMPER:
         return !(digitalRead(BUMPERSENSOR_F) && digitalRead(BUMPERSENSOR_B));
     case BOUNDRY_OR_BUMPER: //Can be activated with SELECT button on the display
         return sensorRead(ANY_BOUNDRY) || sensorRead(BUMPER) || lcd.readButtons() & BUTTON_SELECT; 
     case BATTERY:           //Can be activated with RIGTH button on the display
-        return analogRead(BATTERYSENSOR) * (5 / 1024.00) *2 > BATTERY_CUTOFF + offset && !(lcd.readButtons() & BUTTON_RIGHT);
+        return analogRead(BATTERYSENSOR) * (5 / 1024.00) *2 > BATTERY_CUTOFF + offsetVal && !(lcd.readButtons() & BUTTON_RIGHT);
     case DIRECTION_FORWARD:
         return digitalRead(DIR_L) == HIGH && !(digitalRead(DIR_R) == HIGH);
     case DIRECTION_BACKWARD:

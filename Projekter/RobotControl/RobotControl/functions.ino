@@ -34,6 +34,7 @@ int posVal_R = 0;
 //Variables for the value where the timer will interrupt
 //------------------------------------------------------
 int timer1_counter = 60536; //preload timer 65536-16MHz/256/100Hz (10ms) 59286(100ms) 60536(80ms)
+int backwards_timer = 0;
 
 //Turn variables
 //--------------
@@ -136,18 +137,24 @@ void motorControl()
 
 void set_motors(bool forward_L, bool forward_R, int speed_L, int speed_R)
 {
-    desired_speed_L = speed_L;
-    desired_speed_R = speed_R;
- 
-    if (forward_L)
-        digitalWrite(DIR_L, HIGH);
-    else
-        digitalWrite(DIR_L, LOW);
+    if (!isMidtTurn) 
+    {
+        desired_speed_L = speed_L;
+        desired_speed_R = speed_R;
+     
+        if (forward_L)
+            digitalWrite(DIR_L, HIGH);
+        else
+            digitalWrite(DIR_L, LOW);
+        
+        if (!forward_R) //This one has to be opposite, because the right motor is flipped
+            digitalWrite(DIR_R, HIGH);
+        else
+            digitalWrite(DIR_R, LOW);
     
-    if (!forward_R) //This one has to be opposite, because the right motor is flipped
-        digitalWrite(DIR_R, HIGH);
-    else
-        digitalWrite(DIR_R, LOW);
+        if (!forward_L && forward_R)
+            backwards_timer++;
+    }
 }
 
 //Method initiates turn, controlled in the controller by the isMidtTurn flag
