@@ -167,7 +167,7 @@ void loop()
         }
         break;
     case PROG_CHARGING:
-        if (sensorRead(BATTERY))
+        if (sensorRead(BATTERY, USE_OFFSET))
             programState = PROG_AT_BOUNDRY;
         break;
     }
