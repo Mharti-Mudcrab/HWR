@@ -5,6 +5,7 @@ When a button is pressed, the backlight changes color.
 **********************/
 
 /* Skal vri bruge dette bibliotek i stedet?
+ * https://github.com/adafruit/Adafruit_TinyRGBLCDShield
    // include the library code:
   #include <TinyWireM.h>
   #include <Adafruit_TinyMCP23017.h>
@@ -17,6 +18,7 @@ When a button is pressed, the backlight changes color.
   Adafruit_TinyRGBLCDShield lcd = Adafruit_TinyRGBLCDShield();
 */
 
+// https://github.com/adafruit/Adafruit-RGB-LCD-Shield-Library
 // include the library code:
 #include <Wire.h>
 #include <Adafruit_RGBLCDShield.h>
