@@ -34,7 +34,7 @@ int posVal_R = 0;
 //Variables for the value where the timer will interrupt
 //------------------------------------------------------
 int timer1_counter = 60536; //preload timer 65536-16MHz/256/100Hz (10ms) 59286(100ms) 60536(80ms)
-int backwards_timer = 0;
+int backwards_cyclics = 0;
 
 //Turn variables
 //--------------
@@ -75,7 +75,7 @@ void setup_func()
     //Setup pins for motors and sensors and initialise timer.
     //-------------------------------------------------------
     setup_pins_and_timer(timer1_counter);
-    
+
     //Enable interrupts on pin 2 and 4
     //-----------------------------------
     enableInterrupt(ENC_L, enc_Int_Motor_L, CHANGE);
@@ -97,14 +97,14 @@ void motorControl()
               isReverseTurning = false;
           }
     }
-    
+
     //Perform actual controller calcs n' shit
     current_speed_L = posVal_L - last_Pos_L;   //Calculating the speed of motors
     current_speed_R = posVal_R - last_Pos_R;
 
-    last_Pos_L = posVal_L;                     //Saving current tick-count 
-    last_Pos_R = posVal_R;                    
-    
+    last_Pos_L = posVal_L;                     //Saving current tick-count
+    last_Pos_R = posVal_R;
+
     //Calculating error values
     errorVal_L = desired_speed_L - current_speed_L; //Speed error
     errorVal_R = desired_speed_R - current_speed_R;
@@ -114,7 +114,7 @@ void motorControl()
     //Calculation of the PWM value used to drive the motor
     P_L = static_cast<int>(errorVal_L*Kp_L   +   errorIntSum_L*Ki_L);
     P_R = static_cast<int>(errorVal_R*Kp_R   +   errorIntSum_R*Ki_R);
-    
+
     //Limits the maximum output
     if (P_L > 255)
         P_L = 255;
@@ -125,35 +125,35 @@ void motorControl()
     else if (P_R < 0)
         P_R = 0;
 
-    //Makes sure to stop with zero speed. 
+    //Makes sure to stop with zero speed.
     if (desired_speed_L == ZEROSPEED)
         P_L = 0;
     if (desired_speed_R == ZEROSPEED)
         P_R = 0;
-    
+
     analogWrite(PWM_L, abs(P_L));
     analogWrite(PWM_R, abs(P_R));
 }
 
 void set_motors(bool forward_L, bool forward_R, int speed_L, int speed_R)
 {
-    if (!isMidtTurn) 
+    if (!isMidtTurn)
     {
         desired_speed_L = speed_L;
         desired_speed_R = speed_R;
-     
+
         if (forward_L)
             digitalWrite(DIR_L, HIGH);
         else
             digitalWrite(DIR_L, LOW);
-        
+
         if (!forward_R) //This one has to be opposite, because the right motor is flipped
             digitalWrite(DIR_R, HIGH);
         else
             digitalWrite(DIR_R, LOW);
-    
+
         if (!forward_L && forward_R)
-            backwards_timer++;
+            backwards_cyclics++;
     }
 }
 
@@ -185,7 +185,7 @@ void startTurn(int turn_speed, int turn_degrees = RANDOM_TURN)
         turnRef = abs(turn_degrees) * degreeCalcConst;
         turnStart_L = posVal_L;
         turnStart_R = posVal_R;
-        
+
         if (turn_degrees > 0)
             set_motors(BACKWARD, FORWARD, turn_speed, turn_speed);
         else
@@ -200,7 +200,7 @@ bool turnFinished()
     return !isMidtTurn;
 }
 
-//When initiating wire follow, start by turning a little to orient 
+//When initiating wire follow, start by turning a little to orient
 //robot better for following wire
 void initFollowTurn(int chargerSide)
 {
@@ -212,11 +212,11 @@ void initFollowTurn(int chargerSide)
         turn_degree = (sensor_val / BOUNDRY_CUTOFF_R) * -90;
     }
     else
-    {    
+    {
         sensor_val = analogRead(BOUNDRYSENSOR_L);
         turn_degree = (sensor_val / BOUNDRY_CUTOFF_L) * 90;
     }
 
-    if (sensor_val > 100)
+    if (turn_degree > 20)
         startTurn(MEDIUMSPEED, turn_degree);
 }

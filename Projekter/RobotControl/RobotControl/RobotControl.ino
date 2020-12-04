@@ -49,7 +49,7 @@
 //Charger return side
 #define LEFT_CHARGERSIDE  0
 #define RIGHT_CHARGERSIDE 1
-#define NO_CHARGERSIDE    2
+#define UNKNOWN           2
 
 //Wire follow method
 #define ZIG_ZAG   0
@@ -78,8 +78,8 @@
 
 //  Pins
 //Motor encoders pins
-#define ENC_L 2 
-#define ENC_R 4 
+#define ENC_L 2
+#define ENC_R 4
 //Motor control pins (brake not used)
 #define DIR_L 13
 #define DIR_R 12
@@ -89,7 +89,7 @@
 #define BOUNDRYSENSOR_L A3
 #define BOUNDRYSENSOR_R A2
 //Battery sensor pin
-#define BATTERYSENSOR A0 
+#define BATTERYSENSOR A0
 //Bumper sensor pin
 #define BUMPERSENSOR_F 6
 #define BUMPERSENSOR_B 7
@@ -110,20 +110,20 @@ void setup_pins_and_timer(int timer1_counter)
   lcd.print("Grassotron 3000");
   lcd.setCursor(0,1);
   lcd.print("Let's Cut Some G");
-  
+
   //Initialzing random func with value from unconnectted pin A0
   int seed = analogRead(A1);
   //Serial.print("Seed = ");
   //Serial.println(seed);
   randomSeed(seed);
-  
+
   //Pin modes for boundrySensors
   pinMode(BOUNDRYSENSOR_L, INPUT);
   digitalWrite(BOUNDRYSENSOR_L, LOW); // maybe HIGH ?
   pinMode(BOUNDRYSENSOR_R, INPUT);
   digitalWrite(BOUNDRYSENSOR_L, LOW);
   //analogReference(INTERNAL); // maybe EXTERNAL ?
-  
+
   //Pin modes for the encoders
   pinMode(ENC_L, INPUT);     // set the pin 2 to input
   digitalWrite(ENC_L, LOW);  // use the internal pulldown resistor
@@ -137,9 +137,9 @@ void setup_pins_and_timer(int timer1_counter)
   digitalWrite(DIR_L, LOW);  // Setting the direction of the motor to forward
   analogWrite(PWM_L, ZEROSPEED);     // Initializing the motor at speed 0
 
-  pinMode(DIR_R, OUTPUT);    
-  pinMode(PWM_R, OUTPUT);    
-  digitalWrite(DIR_R, HIGH);  
+  pinMode(DIR_R, OUTPUT);
+  pinMode(PWM_R, OUTPUT);
+  digitalWrite(DIR_R, HIGH);
   analogWrite(PWM_R, ZEROSPEED);
 
   //Initialize timer1 used for the P motor controller for the motors
@@ -155,8 +155,8 @@ void setup_pins_and_timer(int timer1_counter)
 }
 
 //Method for returning state of chosen sensor(s)
-bool sensorRead(int sensorRequestType, bool useOffset = false) 
-{   
+bool sensorRead(int sensorRequestType, bool useOffset = false)
+{
     int offsetVal = 0;
     if (useOffset && sensorRequestType == BATTERY)
         offsetVal = 2;
@@ -164,8 +164,8 @@ bool sensorRead(int sensorRequestType, bool useOffset = false)
         offsetVal = 10;
     else if (useOffset)
         offsetVal = 0;
-    
-        
+
+
     switch (sensorRequestType)
     {
     case LEFT_BOUNDRY:
@@ -183,7 +183,7 @@ bool sensorRead(int sensorRequestType, bool useOffset = false)
     case BUMPER:
         return !(digitalRead(BUMPERSENSOR_F) && digitalRead(BUMPERSENSOR_B));
     case BOUNDRY_OR_BUMPER: //Can be activated with SELECT button on the display
-        return sensorRead(ANY_BOUNDRY) || sensorRead(BUMPER) || lcd.readButtons() & BUTTON_SELECT; 
+        return sensorRead(ANY_BOUNDRY) || sensorRead(BUMPER) || lcd.readButtons() & BUTTON_SELECT;
     case BATTERY:           //Can be activated with RIGTH button on the display
         return analogRead(BATTERYSENSOR) * (5 / 1024.00) *2 > BATTERY_CUTOFF + offsetVal && !(lcd.readButtons() & BUTTON_RIGHT);
     case DIRECTION_FORWARD:

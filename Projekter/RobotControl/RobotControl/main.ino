@@ -1,101 +1,94 @@
-//=================================== Main program ====================================
-//setup state variables and define main program no other functions than setup and loop.
-//Program flag variables
-//----------------------
+//==============================================================================
+//                                Main Program
+//        Setup state variables and it's init state.
+//        Calls Arduino setup() and loop().
+//        setup() cals setup_func() in functions.ino their set's up:
+//                pin's, timer's, enum varibels, and interupts handler.
+//        loop() contains "AI's" State machine, and Display handler
+//               It's use method's from functions.ino and RobotControl.ino
+//==============================================================================
+
+//== Define Init state of state machine varibels ===============================
 int programState = 0;
 int boundryState = 0;
 int returningState = 0;
 
-//Charger return variables
-int chargerSide = NO_CHARGERSIDE;
-int wireFollowMethod = STRAIGHT; //ZIG_ZAG STRAIGHT CORNER
+//== Defines default method and varibels for following wire and charching ======
+int wireFollowMethod = STRAIGHT; //Other options is: ZIG_ZAG , STRAIGHT , CORNER
+int chargerSide = UNKNOWN;
 
-//Display and buttons variables
+//== LCD screen variables ======================================================
 unsigned long displayTimer = 3000;
-uint8_t buttons;
+uint8_t buttons; // Binary container for the butten pressed on display
 
-//Initialise the backend variables and setup pinmodes, timers and more.
-//All of it is done through setup_and_funcs.cpp and performed in functions.cpp
-//----------------------------------------------------------------------------
-void setup()
-{
-  setup_func();
+//== Initialise ================================================================
+void setup() {
+  setup_func(); // set's up pin's, timer's, enum varibels, and interupts handler.
 }
 
-//Program loop that calls methods in functions.ino and sensorRead() from RobotControl.ino
-//---------------------------------------------------------------------------------------
-void loop()
-{
-    //Read button inputs
-    buttons = lcd.readButtons();
+//== Program loop  State machine controller  ===================================
+void loop() {
 
-    //Battery level check
-    if (!sensorRead(BATTERY))
-    {
+//== Battery Low Check handler =================================================
+    if (!sensorRead(BATTERY)) {
         if (programState == PROG_CUT_GRASS)
             programState = PROG_RETURNING;
         else if(boundryState == BOUNDRY_TURN)
             startTurn(REVERSE_TURN);
     }
 
-    //Main program state machine
-    switch (programState)
-    {
-    case PROG_CUT_GRASS:
-        set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED);
+//== Main Program state machine  ===============================================
+    switch (programState) {
 
+    case PROG_CUT_GRASS: // Drive forward if no boundr or bumper
+        set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED);
         if (sensorRead(BOUNDRY_OR_BUMPER))
             programState = PROG_AT_BOUNDRY;
-
         break;
-    case PROG_AT_BOUNDRY:
-        switch (boundryState)
-        {
-        case BOUNDRY_DRIVE_BACKWARDS:
-            //Backup slowly to accurately measure distance
-            set_motors(BACKWARD, BACKWARD, LOWSPEED, LOWSPEED);
 
-            if (backwards_timer > 15) {
+    case PROG_AT_BOUNDRY:
+    //== Sub state machine  Boundry and Bumper handler =========================
+        switch (boundryState) {
+        case BOUNDRY_DRIVE_BACKWARDS:
+            // Drive backword max 15 cyclics if boundry bumper not low
+            set_motors(BACKWARD, BACKWARD, LOWSPEED, LOWSPEED);
+            if (backwards_cyclics > 15) {
                 if (sensorRead(HIGHEST_BOUNDRY_LEFT))
                     startTurn(MEDIUMSPEED, -90);
                 else
                     startTurn(MEDIUMSPEED, 90);
-                backwards_timer = 0;
+                backwards_cyclics = 0;
             }
-
-            //Back off until both boundry sensors are low
-            if (!sensorRead(BOUNDRY_OR_BUMPER))
-            {
+            // Drive backword until both boundry sensors are low
+            if (!sensorRead(BOUNDRY_OR_BUMPER)) {
                 boundryState = BOUNDRY_TURN;
-                //In case we are comming from charging.
-                if (chargerSide != NO_CHARGERSIDE)
-                {
+                // In case we are comming from charging.
+                if (chargerSide != UNKNOWN) {
                     if (chargerSide == LEFT_CHARGERSIDE)
                         startTurn(MEDIUMSPEED, -90);
                     else if (chargerSide == RIGHT_CHARGERSIDE)
                         startTurn(MEDIUMSPEED, 90);
-
-                    chargerSide = NO_CHARGERSIDE;
-                }
-                else
-                {
+                    chargerSide = UNKNOWN;
+                } else {
                     startTurn(MEDIUMSPEED);
                 }
             }
             break;
+
         case BOUNDRY_TURN:
-            if (turnFinished())
-            {
+            if (turnFinished()) {
+                // Return to main state mashine
                 programState = PROG_CUT_GRASS;
-                boundryState = BOUNDRY_DRIVE_BACKWARDS;  //resetter flag til næste boundry møde
+                //Reset sub state mashine for next boundry bumper.
+                boundryState = BOUNDRY_DRIVE_BACKWARDS;
             }
-            else if(sensorRead(BUMPER))
-            {
+            else if(sensorRead(BUMPER) {
                 boundryState = BOUNDRY_DRIVE_BACKWARDS;
             }
             break;
         }
         break;
+
     case PROG_RETURNING:
         switch (returningState)
         {
@@ -143,22 +136,19 @@ void loop()
                     set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED);
                 break;
             case CORNER: //Driving within the wire, following it with corner of the robot approach.
-                if (turnFinished())
+                if (chargerSide == LEFT_CHARGERSIDE)
                 {
-                    if (chargerSide == LEFT_CHARGERSIDE)
-                    {
-                        if (sensorRead(LEFT_BOUNDRY))
-                            set_motors(FORWARD, FORWARD, MEDIUMSPEED, ZEROSPEED);
-                        else
-                            set_motors(FORWARD, FORWARD, ZEROSPEED, MEDIUMSPEED);
-                    }
+                    if (sensorRead(LEFT_BOUNDRY))
+                        set_motors(FORWARD, FORWARD, MEDIUMSPEED, ZEROSPEED);
                     else
-                    {
-                        if (sensorRead(RIGHT_BOUNDRY))
-                            set_motors(FORWARD, FORWARD, ZEROSPEED, MEDIUMSPEED);
-                        else
-                            set_motors(FORWARD, FORWARD, MEDIUMSPEED, ZEROSPEED);
-                    }
+                        set_motors(FORWARD, FORWARD, ZEROSPEED, MEDIUMSPEED);
+                }
+                else
+                {
+                    if (sensorRead(RIGHT_BOUNDRY))
+                        set_motors(FORWARD, FORWARD, ZEROSPEED, MEDIUMSPEED);
+                    else
+                        set_motors(FORWARD, FORWARD, MEDIUMSPEED, ZEROSPEED);
                 }
                 break;
             }
@@ -181,6 +171,7 @@ void loop()
         break;
     }
 
+    buttons = lcd.readButtons(); // Read button inputs
     //Toggle and display fire follow method
     if (buttons)
     {
