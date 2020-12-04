@@ -23,8 +23,8 @@ void setup()
   setup_func();
 }
 
-//Program loop that calls methods in setup_and_funcs.cpp
-//-------------------------------------------------------
+//Program loop that calls methods in functions.ino and sensorRead() from RobotControl.ino
+//---------------------------------------------------------------------------------------
 void loop() 
 { 
     //Read button inputs
