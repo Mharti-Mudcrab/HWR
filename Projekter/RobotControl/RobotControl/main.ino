@@ -124,7 +124,6 @@ void loop()
                     else
                         chargerSide = RIGHT_CHARGERSIDE;
                     
-                    //if (wireFollowMethod == CORNER)
                     initFollowTurn(chargerSide);
 
                     wireFollowMethod = (wireFollowMethod +2) %3;
