@@ -29,6 +29,8 @@ void setup() {
 //== Program loop  State machine controller  ===================================
 void loop() {
 
+    buttons = lcd.readButtons(); // Read button input's
+
 //== Battery Low Check handler =================================================
     if (!sensorRead(BATTERY)) {
         if (programState == PROG_CUT_GRASS)
@@ -47,8 +49,9 @@ void loop() {
         break;
 
     case PROG_AT_BOUNDRY:
-    //== Sub state machine  Boundry and Bumper handler =========================
+    //== Sub state machine boundry and bumper handler ==========================
         switch (boundryState) {
+
         case BOUNDRY_DRIVE_BACKWARDS:
             // Drive backword max 15 cyclics if boundry bumper not low
             set_motors(BACKWARD, BACKWARD, LOWSPEED, LOWSPEED);
@@ -83,38 +86,39 @@ void loop() {
                 boundryState = BOUNDRY_DRIVE_BACKWARDS;
             }
             else if(sensorRead(BUMPER) {
+// ifa tur code heer
                 boundryState = BOUNDRY_DRIVE_BACKWARDS;
             }
             break;
         }
         break;
+        //== End of sub state machine boundry and bumper handler ===============
 
     case PROG_RETURNING:
-        switch (returningState)
-        {
+        //== Sub state machine returning to charge station (low battery) =======
+        switch (returningState) {
+
         case RETURN_FIND_WIRE:
-            if(turnFinished())
-            {
-                if(sensorRead(BUMPER))
-                    set_motors(BACKWARD, BACKWARD, LOWSPEED, LOWSPEED);
-                else if(sensorRead(DIRECTION_BACKWARD))
-                    startTurn(LOWSPEED);
+            // Avoiding a obstacle.
+            if(sensorRead(BUMPER))
+                set_motors(BACKWARD, BACKWARD, LOWSPEED, LOWSPEED);
+            else if(sensorRead(DIRECTION_BACKWARD))
+                startTurn(LOWSPEED);
+            else
+                set_motors(FORWARD, FORWARD, LOWSPEED, LOWSPEED);
+
+            // Correcting orientation towards boundry wire.
+            if (sensorRead(ANY_BOUNDRY) && turnFinished() ) {
+                returningState = RETURN_FOLLOW_WIRE;
+                if (sensorRead(LEFT_BOUNDRY))
+                    chargerSide = LEFT_CHARGERSIDE;
                 else
-                    set_motors(FORWARD, FORWARD, LOWSPEED, LOWSPEED);
+                    chargerSide = RIGHT_CHARGERSIDE;
 
-                if (sensorRead(ANY_BOUNDRY))
-                {
-                    returningState = RETURN_FOLLOW_WIRE;
-                    if (sensorRead(LEFT_BOUNDRY))
-                        chargerSide = LEFT_CHARGERSIDE;
-                    else
-                        chargerSide = RIGHT_CHARGERSIDE;
+                initFollowTurn(chargerSide);
 
-                    initFollowTurn(chargerSide);
-
-                    wireFollowMethod = (wireFollowMethod +2) %3;
-                    buttons = BUTTON_LEFT;
-                }
+                buttons = BUTTON_LEFT; // cals
+                wireFollowMethod = (wireFollowMethod +2) %3;
             }
             break;
         case RETURN_FOLLOW_WIRE:
@@ -171,24 +175,25 @@ void loop() {
         break;
     }
 
-    buttons = lcd.readButtons(); // Read button inputs
-    //Toggle and display fire follow method
-    if (buttons)
-    {
+//== Toggle and display follow wire method, show voltage on display ============
+    if (buttons) {
         if (buttons & BUTTON_LEFT)
         {
             lcd.setCursor(0, 1);
             lcd.print("FOLLOW WIRE ");
-            switch (wireFollowMethod)
-            {
+            //== Toggle between diffrent follow wire methods ===================
+            switch (wireFollowMethod) {
+
             case ZIG_ZAG:
                 wireFollowMethod = STRAIGHT;
                 lcd.print("S V");
                 break;
+
             case STRAIGHT:
                 wireFollowMethod = CORNER;
                 lcd.print("C V");
                 break;
+
             case CORNER:
                 wireFollowMethod = ZIG_ZAG;
                 lcd.print("Z V");
@@ -198,13 +203,13 @@ void loop() {
         }
     }
 
-    //Update display every 500ms. as default
+//== Update display every 500ms, depending on state machine's ==================
     if (displayTimer < millis())
     {
         displayTimer = millis() + 500;
         lcd.setCursor(0, 0);
-        switch (programState)
-        {
+        //== Display  according to main state machine ==========================
+        switch (programState) {
         case PROG_CUT_GRASS:
             lcd.print("CUTTING GRASS   ");
             lcd.setCursor(0, 1);
@@ -216,9 +221,10 @@ void loop() {
             lcd.print(analogRead(BOUNDRYSENSOR_L));
             lcd.print("       ");
             break;
+
         case PROG_AT_BOUNDRY:
-            switch (boundryState)
-            {
+            switch (boundryState) {
+            //== Display according to sub state machine boundry and bumper =====
             case BOUNDRY_DRIVE_BACKWARDS:
                 lcd.print("AT BOUNDRY  R");
                 lcd.print(analogRead(BOUNDRYSENSOR_R));
@@ -228,6 +234,7 @@ void loop() {
                 lcd.print(analogRead(BOUNDRYSENSOR_L));
                 lcd.print("  ");
                 break;
+
             case BOUNDRY_TURN:
                 lcd.print("AT BOUNDRY      ");
                 lcd.setCursor(0, 1);
@@ -237,10 +244,13 @@ void loop() {
                     lcd.print("R     ");
                 else
                     lcd.print("L     ");
-                displayTimer = millis() + 1000;
+                    displayTimer = millis() + 1000;
                 break;
+
             }
             break;
+            //== End Display according to sub state machine boundry and bumper =
+
         case PROG_RETURNING:
             if(returningState != RETURN_FOLLOW_WIRE) {
                 lcd.print("RETURN R");
@@ -252,19 +262,22 @@ void loop() {
                 lcd.print("    ");
                 lcd.setCursor(0, 1);
             }
-            switch (returningState)
-            {
+            switch (returningState) {
+            //== Display according to sub state machine returning to station ===
             case RETURN_FIND_WIRE:
                 lcd.print("FIND WIRE   V");
                 lcd.print(analogRead(BATTERYSENSOR) * (5 / 1024.00) *2);
                 break;
             case RETURN_FOLLOW_WIRE:
-                //Optimised to be displayed base on event.
+                // Optimised to be displayed base on event,
+                // as Toggle and display follow wire method...
                 break;
             }
             break;
+            //== End Display according to sub state machine returning to station
+
         case PROG_CHARGING:
-            lcd.print("CHARGING    CS ");
+            lcd.print("CHARGING SIDE ");
             if (chargerSide == LEFT_CHARGERSIDE)
                 lcd.print("L");
             else
