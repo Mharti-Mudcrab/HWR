@@ -4,6 +4,19 @@ This code displays text on the shield, and also reads the buttons on the keypad.
 When a button is pressed, the backlight changes color.
 **********************/
 
+/* Skal vri bruge dette bibliotek i stedet?
+   // include the library code:
+  #include <TinyWireM.h>
+  #include <Adafruit_TinyMCP23017.h>
+  #include <Adafruit_TinyRGBLCDShield.h>
+  
+  // The shield uses the I2C SCL and SDA pins. On classic Arduinos
+  // this is Analog 4 and 5 so you can't use those for analogRead() anymore
+  // However, you can connect other I2C sensors to the I2C bus and share
+  // the I2C bus.
+  Adafruit_TinyRGBLCDShield lcd = Adafruit_TinyRGBLCDShield();
+*/
+
 // include the library code:
 #include <Wire.h>
 #include <Adafruit_RGBLCDShield.h>

@@ -68,7 +68,7 @@
 #define DIRECTION_BACKWARD    9
 
 //Sufficient battery level cutoff
-#define BATTERY_CUTOFF 5
+#define BATTERY_CUTOFF 6.2
 
 //Boundry sensor cutoff
 #define BOUNDRY_CUTOFF_L 200 // venstre er for hurtig med høj hastighed.
