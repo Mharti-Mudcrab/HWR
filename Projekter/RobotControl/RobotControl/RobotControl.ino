@@ -153,17 +153,20 @@ void setup_pins_and_timer(int timer1_counter)
 }
 
 //Method for returning state of chosen sensor(s)
-bool sensorRead(int sensorRequestType, bool useBoundryOffset = false) 
+bool sensorRead(int sensorRequestType, bool useOffset = false) 
 {   
-    int boundryOffset = 0;
-    if (useBoundryOffset)
-        int boundryOffset = 80;
+    int offset = 0;
+    if (useOffset && sensorRequestType == BATTERY)
+        offset = 1;
+    else if (useOffset)
+        offset = 80;
+        
     switch (sensorRequestType)
     {
     case LEFT_BOUNDRY:
-        return analogRead(BOUNDRYSENSOR_L) > (BOUNDRY_CUTOFF_L + boundryOffset);
+        return analogRead(BOUNDRYSENSOR_L) > (BOUNDRY_CUTOFF_L + offset);
     case RIGHT_BOUNDRY:
-        return analogRead(BOUNDRYSENSOR_R) > (BOUNDRY_CUTOFF_R + boundryOffset);
+        return analogRead(BOUNDRYSENSOR_R) > (BOUNDRY_CUTOFF_R + offset);
     case ANY_BOUNDRY:
         return sensorRead(LEFT_BOUNDRY) || sensorRead(RIGHT_BOUNDRY);
     case HIGHEST_BOUNDRY_LEFT:
@@ -175,7 +178,7 @@ bool sensorRead(int sensorRequestType, bool useBoundryOffset = false)
     case BOUNDRY_OR_BUMPER: //Can be activated with SELECT button on the display
         return sensorRead(ANY_BOUNDRY) || sensorRead(BUMPER) || lcd.readButtons() & BUTTON_SELECT; 
     case BATTERY:           //Can be activated with RIGTH button on the display
-        return analogRead(BATTERYSENSOR) * (5 / 1024.00) *2 > BATTERY_CUTOFF && !(lcd.readButtons() & BUTTON_RIGHT);
+        return analogRead(BATTERYSENSOR) * (5 / 1024.00) *2 > BATTERY_CUTOFF + offset && !(lcd.readButtons() & BUTTON_RIGHT);
     case DIRECTION_FORWARD:
         return digitalRead(DIR_L) == HIGH && !(digitalRead(DIR_R) == HIGH);
     case DIRECTION_BACKWARD:
