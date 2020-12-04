@@ -117,21 +117,24 @@ void loop() {
 
                 initFollowTurn(chargerSide);
 
-                buttons = BUTTON_LEFT; // cals
+                buttons = BUTTON_LEFT; // Toggle follow wire dispaly,
                 wireFollowMethod = (wireFollowMethod +2) %3;
+                // Correcting toggle method change, coused by dispaly toogle.
             }
             break;
+
         case RETURN_FOLLOW_WIRE:
-            switch (wireFollowMethod)
-            {
-            case ZIG_ZAG: //Zig-zag over the wire approach.
+            //== Sub state machine depending follow wire method ================
+            switch (wireFollowMethod) {
+
+            case ZIG_ZAG: // Driving Zig-zag, above wire approach.
                 set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED);
                 if (sensorRead(HIGHEST_BOUNDRY_LEFT, USE_OFFSET))
                     set_motors(FORWARD, FORWARD, ZEROSPEED, MEDIUMSPEED);
                 else if(sensorRead(HIGHEST_BOUNDRY_RIGHT, USE_OFFSET))
                     set_motors(FORWARD, FORWARD, MEDIUMSPEED, ZEROSPEED);
                 break;
-            case STRAIGHT: //Driving straight as much as possible over wire approach.
+            case STRAIGHT: // Driving Straight if possible, above wire approach.
                 if (sensorRead(LEFT_BOUNDRY, USE_OFFSET))
                     set_motors(FORWARD, FORWARD, ZEROSPEED, MEDIUMSPEED);
                 else if (sensorRead(RIGHT_BOUNDRY, USE_OFFSET))
@@ -139,16 +142,13 @@ void loop() {
                 else
                     set_motors(FORWARD, FORWARD, MEDIUMSPEED, MEDIUMSPEED);
                 break;
-            case CORNER: //Driving within the wire, following it with corner of the robot approach.
-                if (chargerSide == LEFT_CHARGERSIDE)
-                {
+            case CORNER: // Driving inside the wire, using Corner sensor.
+                if (chargerSide == LEFT_CHARGERSIDE) {
                     if (sensorRead(LEFT_BOUNDRY))
                         set_motors(FORWARD, FORWARD, MEDIUMSPEED, ZEROSPEED);
                     else
                         set_motors(FORWARD, FORWARD, ZEROSPEED, MEDIUMSPEED);
-                }
-                else
-                {
+                } else {
                     if (sensorRead(RIGHT_BOUNDRY))
                         set_motors(FORWARD, FORWARD, ZEROSPEED, MEDIUMSPEED);
                     else
@@ -157,11 +157,12 @@ void loop() {
                 break;
             }
 
+            // if sense of wire is complety gone, locate wire again
             if (sensorRead(ZERO_BOUNDRY_RESPONSE))
                 returningState = RETURN_FIND_WIRE;
 
-            if (sensorRead(BUMPER))
-            {
+            // if charger sation is found.
+            if (sensorRead(BUMPER)) {
                 set_motors(FORWARD, FORWARD, ZEROSPEED, ZEROSPEED);
                 programState = PROG_CHARGING;
                 returningState = RETURN_FIND_WIRE;
@@ -170,6 +171,7 @@ void loop() {
         }
         break;
     case PROG_CHARGING:
+        // if Charging is done, navigate into grass field.
         if (sensorRead(BATTERY, USE_OFFSET))
             programState = PROG_AT_BOUNDRY;
         break;
