@@ -182,6 +182,8 @@ void loop() {
     if (buttons) {
         if (buttons & BUTTON_LEFT)
         {
+            lcd.setCursor(0, 0);
+            lcd.print("RETURN          ");
             lcd.setCursor(0, 1);
             lcd.print("FOLLOW WIRE ");
             //== Toggle between diffrent follow wire methods ===================
