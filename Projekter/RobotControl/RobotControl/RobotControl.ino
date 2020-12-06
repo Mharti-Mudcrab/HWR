@@ -1,5 +1,4 @@
-//==============================================================================
-//                                RobotControl
+//=============================== RobotControl =================================
 //        Setup project, by defineing:
 //          Include Libraries
 //          Defines global variables, constants, enum's, flag's, and timere

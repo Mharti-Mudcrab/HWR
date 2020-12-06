@@ -1,5 +1,4 @@
-//==============================================================================
-//                                Main Program
+//=============================== Main Program =================================
 //        Setup state variables and it's init state.
 //        Calls Arduino setup() and loop().
 //        setup() cals setup_func() in functions.ino their set's up:
