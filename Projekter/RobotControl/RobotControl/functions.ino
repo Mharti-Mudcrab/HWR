@@ -185,7 +185,7 @@ void startTurn(int turn_speed, int turn_degrees = RANDOM_TURN) {
 }
 
 //== Check if turn is finished =================================================
-bool turnFinished() {
+bool isTurnFinished() {
     return !isMidtTurn;
 }
 

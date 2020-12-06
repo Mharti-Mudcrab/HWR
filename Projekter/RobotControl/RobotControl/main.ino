@@ -79,7 +79,7 @@ void loop() {
             break;
 
         case BOUNDRY_TURN:
-            if (turnFinished()) {
+            if (isTurnFinished()) {
                 // Return to main state mashine
                 programState = PROG_CUT_GRASS;
                 //Reset sub state mashine for next boundry bumper.
@@ -108,7 +108,7 @@ void loop() {
                 set_motors(FORWARD, FORWARD, LOWSPEED, LOWSPEED);
 
             // Correcting orientation towards boundry wire.
-            if (sensorRead(ANY_BOUNDRY) && turnFinished() ) {
+            if (sensorRead(ANY_BOUNDRY) && isTurnFinished() ) {
                 returningState = RETURN_FOLLOW_WIRE;
                 if (sensorRead(LEFT_BOUNDRY))
                     chargerSide = LEFT_CHARGERSIDE;
